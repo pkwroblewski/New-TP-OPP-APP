@@ -78,6 +78,17 @@ export async function POST(request: NextRequest) {
 
     // Handle specific error types
     if (error instanceof Error) {
+      // Handle authentication errors from Anthropic API
+      if (error.message.includes("authentication") || error.message.includes("invalid x-api-key") || error.message.includes("401")) {
+        return NextResponse.json(
+          {
+            error:
+              "API key not configured. Please set ANTHROPIC_API_KEY in environment variables.",
+          },
+          { status: 401 }
+        );
+      }
+
       if (error.message.includes("API")) {
         return NextResponse.json(
           {

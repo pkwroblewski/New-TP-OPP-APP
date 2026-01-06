@@ -1,146 +1,116 @@
 # TP Extractor - Claude Progress Report
-# Session 1: Initializer Agent
+# Session 2: Testing Agent
 # Date: 2025-01-06
 
 ## Summary
-This session established the foundation for the TP Extractor application - a Luxembourg Transfer Pricing Analysis Tool.
+This session focused on testing the PDF upload functionality and verifying features.
 
-## Completed Tasks
+## Current Status
+- **Total Features:** 107
+- **Passing:** 5
+- **In Progress:** 0
+- **Completion:** 4.7%
 
-### 1. Feature Creation (107 features)
-- Created 107 features using the feature_create_bulk tool
-- Features cover all mandatory test categories:
-  - Functional tests: PDF upload, extraction, results display, data tables, exports
-  - Style tests: Dark mode theme, typography, color coding, responsive design
-  - Accessibility tests: Keyboard navigation, ARIA labels, focus indicators
-  - Error handling tests: Invalid files, timeouts, network failures
-  - TP analysis tests: D/E ratio thresholds, spread analysis, score criteria
+## Passing Features (5)
+1. **Feature 1:** PDF Upload - Drag and Drop ✅
+2. **Feature 2:** PDF Upload - Click to Browse ✅
+3. **Feature 3:** PDF Upload - File Type Validation ✅
+4. **Feature 4:** PDF Upload - File Size Validation ✅
+5. **Feature 5:** PDF Upload - Clear/Reset Uploaded File ✅
 
-Feature breakdown by area:
-- PDF Upload: 5 features
-- Extraction API: 4 features
-- Results Display: 8 features (metadata, summary cards)
-- TP Flags: 4 features
-- Data Tables: 12 features (Balance Sheet, P&L, IC Details, Raw JSON)
-- PDF Viewer: 5 features
-- Export Functions: 4 features
-- Error Handling: 8 features
-- Styling/Design: 12 features
-- Accessibility: 5 features
-- Other functional: 40+ features
+## Session 2 Work Completed
 
-### 2. Project Setup Files
-- init.sh: Environment setup script with:
-  - Node.js version check (18+)
-  - npm dependency installation
-  - ANTHROPIC_API_KEY validation
-  - .env.local template creation
-  - Helpful startup instructions
+### Feature Testing
+1. **Feature 4 - File Size Validation**
+   - Created 51MB test file (over 50MB limit)
+   - Verified error message "File size must be less than 50MB" appears
+   - Confirmed max size limit is communicated to user
+   - Marked as PASSING
 
-- README.md: Comprehensive documentation with:
-  - Project overview
-  - Technology stack details
-  - Setup instructions
-  - Project structure
-  - TP analysis rules
-  - Design system documentation
+2. **Feature 5 - Clear/Reset Uploaded File**
+   - Tested upload → clear → re-upload workflow
+   - Verified clear button (X icon) is available
+   - Verified upload zone returns to initial state after clear
+   - Verified new file can be uploaded after clear
+   - Marked as PASSING
 
-### 3. Git Repository
-- Initialized Git repository
-- Created .gitignore with appropriate exclusions
+### Regression Testing
+- Verified Feature 1 (Drag-drop zone visible)
+- Verified Feature 2 (Click to browse works, PDF accepted)
+- Verified Feature 3 (Non-PDF rejected with error message)
 
-### 4. Project Structure (Next.js 14)
-Created the following structure:
-```
-tp-extractor/
-├── src/
-│   ├── app/
-│   │   ├── page.tsx              # Main page with upload/results states
-│   │   ├── layout.tsx            # Root layout with dark theme
-│   │   ├── globals.css           # Tailwind + custom styles
-│   │   └── api/extract/route.ts  # Extraction API endpoint
-│   ├── components/
-│   │   ├── upload-zone.tsx       # Drag-drop file upload
-│   │   ├── results-dashboard.tsx # Main results container
-│   │   ├── summary-cards.tsx     # Metric summary cards
-│   │   ├── tp-flags.tsx          # Priority flags display
-│   │   ├── sticky-score.tsx      # Floating TP score
-│   │   ├── export-buttons.tsx    # Excel/JSON/Copy exports
-│   │   └── data-tables/
-│   │       ├── balance-sheet-table.tsx
-│   │       ├── pnl-table.tsx
-│   │       ├── ic-details-table.tsx
-│   │       └── raw-json-viewer.tsx
-│   ├── lib/
-│   │   ├── claude.ts             # Claude API client
-│   │   ├── prompts.ts            # Extraction prompts
-│   │   ├── schema.ts             # Zod validation schemas
-│   │   └── utils.ts              # Formatting helpers
-│   └── types/
-│       └── extraction.ts         # TypeScript interfaces
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-├── postcss.config.mjs
-├── next.config.mjs
-├── .env.local.example
-└── .gitignore
-```
+### Code Improvements
+- Enhanced API error handling in `route.ts` to show clear message when ANTHROPIC_API_KEY is not configured
 
-## Key Implementation Details
+## Blockers
 
-### Claude API Integration
-- Uses Claude Sonnet for PDF document extraction
-- Comprehensive extraction prompt for Luxembourg annual accounts
-- Zod schema validation for response structure
-- Cost tracking per extraction (~$0.20-0.30)
+### CRITICAL: API Key Not Configured
+The ANTHROPIC_API_KEY in `.env.local` is set to placeholder value `your_api_key_here`.
 
-### TP Analysis Logic
-- D/E ratio thresholds: 1.5x, 5.67x, 10x
-- Spread analysis: Zero (<10bps), Low (<25bps), Negative
-- Scoring: A (High), B (Medium), C (Low) based on configurable rules
+**Impact:** Cannot test any features that require PDF extraction:
+- Features 6-107 all require successful extraction
+- This includes: Results display, Summary cards, TP flags, Data tables, PDF viewer, Export functions, etc.
 
-### Design System
-- Dark mode first (slate-900/950 background)
-- Typography: Inter (sans), JetBrains Mono (data)
-- Color coding: red (high), amber (medium), emerald (low)
-- Responsive: Desktop, Tablet, Mobile
+**To Unblock:**
+1. Obtain a valid Anthropic API key
+2. Update `tp-extractor/.env.local` with: `ANTHROPIC_API_KEY=sk-ant-api03-...`
+3. Restart the development server
 
-## Next Steps for Future Agents
+## Next Steps for Future Sessions
 
-1. **Install Dependencies & Test**
-   - Run `npm install` in tp-extractor directory
-   - Test with `npm run dev`
-   - Verify basic UI renders correctly
+### Once API Key is Configured:
+1. **Test Feature 6** - Extraction API - Successful Extraction
+   - Upload a real Luxembourg annual accounts PDF
+   - Verify extraction completes
+   - Verify results dashboard appears
 
-2. **Complete UI Components**
-   - PDF Viewer component (react-pdf integration)
-   - Add shadcn/ui components as needed
-   - Implement streaming progress UI
+2. **Test Results Display Features (9-14)**
+   - Metadata display
+   - Summary cards
+   - TP Score display
 
-3. **API Testing**
-   - Test with real Luxembourg PDF documents
-   - Verify Zod schema handles all response variations
-   - Add proper error handling for edge cases
+3. **Test Data Tables (19-30)**
+   - Balance Sheet
+   - P&L
+   - IC Details
+   - Raw JSON
 
-4. **Feature Implementation**
-   - Work through features in priority order
-   - Use `feature_get_next` to get next feature
-   - Mark features as passing with `feature_mark_passing`
+### If API Key Remains Unavailable:
+Consider implementing mock data mode for development/testing:
+- Add environment variable `USE_MOCK_DATA=true`
+- Return sample extraction results
+- This would allow testing of UI components
 
-5. **Polish & Refinement**
-   - Animations and transitions
-   - Accessibility compliance
-   - Performance optimization
+## Technical Notes
 
-## Feature Stats
-- Total Features: 107
-- Passing: 0
-- In Progress: 0
-- Completion: 0%
+### Development Server
+- Running on port 3002 (3000 and 3001 were in use)
+- Start command: `npm run dev --prefix tp-extractor`
 
-## Notes
-- No mock data - all features require real data verification
-- Features are stored in features.db (SQLite)
-- Never remove or edit features - only mark as passing
-- Use streaming SSE for real-time extraction progress
+### Test Files Created
+- `test.pdf` - Small valid PDF for upload testing
+- `test2.pdf` - Second test PDF for clear/re-upload testing
+- `large-test.pdf` - 51MB file for size validation testing
+- `test-invalid.txt` - Text file for type validation testing
+
+### Screenshots
+All test screenshots stored in `.playwright-mcp/` directory:
+- `regression-home-page.png`
+- `regression-file-type-error.png`
+- `regression-pdf-upload-success.png`
+- `feature4-file-size-validation.png`
+- `feature5-before-clear.png`
+- `feature5-after-clear.png`
+- `feature5-new-file-upload.png`
+
+## UI Verification
+- Dark mode theme applied correctly ✅
+- Upload zone styled correctly ✅
+- Error messages styled in red with icon ✅
+- File info displays filename and size ✅
+- Clear button (X) visible and functional ✅
+
+## Code Quality
+- No console errors during normal operation
+- File validation working correctly (type and size)
+- API error handling improved
