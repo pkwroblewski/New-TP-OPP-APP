@@ -49,10 +49,34 @@ export default function ResultsDashboard({
               <h1 className="text-xl font-semibold text-slate-100">
                 {metadata.company_name || "Unknown Company"}
               </h1>
-              <p className="text-sm text-slate-400">
-                {metadata.rcs_number && `RCS ${metadata.rcs_number} · `}
-                {formatDate(metadata.financial_year_end)}
-              </p>
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <span>
+                  {metadata.rcs_number && `RCS ${metadata.rcs_number} · `}
+                  {formatDate(metadata.financial_year_end)}
+                </span>
+                {/* Currency badge */}
+                <span className="px-2 py-0.5 bg-slate-700 rounded text-slate-300 text-xs font-medium">
+                  {metadata.currency}
+                </span>
+                {/* Account type badge */}
+                {metadata.account_type && (
+                  <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs font-medium capitalize">
+                    {metadata.account_type}
+                  </span>
+                )}
+                {/* Confidence indicator */}
+                <span
+                  className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    metadata.extraction_confidence === "high"
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : metadata.extraction_confidence === "medium"
+                      ? "bg-amber-500/20 text-amber-400"
+                      : "bg-red-500/20 text-red-400"
+                  }`}
+                >
+                  {metadata.extraction_confidence} confidence
+                </span>
+              </div>
             </div>
           </div>
 
