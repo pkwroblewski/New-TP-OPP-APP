@@ -3,73 +3,40 @@
 import { useState } from "react";
 import UploadZone from "@/components/upload-zone";
 import ResultsDashboard from "@/components/results-dashboard";
-import { ExtractionResult } from "@/types/extraction";
+import StreamingResultsDashboard from "@/components/streaming-results-dashboard";
+import { useStreamingExtraction } from "@/hooks/useStreamingExtraction";
 
 export default function Home() {
-  const [extractionResult, setExtractionResult] =
-    useState<ExtractionResult | null>(null);
   const [pdfData, setPdfData] = useState<string | null>(null);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { state, isExtracting, startExtraction, reset, getCompleteResult } =
+    useStreamingExtraction();
 
   const handleExtraction = async (file: File) => {
-    setIsExtracting(true);
-    setError(null);
+    // Convert file to base64 for PDF viewer
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPdfData(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
 
-    try {
-      // Convert file to base64 for PDF viewer
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setPdfData(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-
-      // Prepare form data
-      const formData = new FormData();
-      formData.append("file", file);
-
-      // Call extraction API
-      const response = await fetch("/api/extract", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Extraction failed");
-      }
-
-      // Handle streaming response
-      const reader2 = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let result = "";
-
-      if (reader2) {
-        while (true) {
-          const { done, value } = await reader2.read();
-          if (done) break;
-          result += decoder.decode(value, { stream: true });
-        }
-      }
-
-      const extractedData = JSON.parse(result) as ExtractionResult;
-      setExtractionResult(extractedData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setIsExtracting(false);
-    }
+    // Start streaming extraction
+    await startExtraction(file);
   };
 
   const handleNewExtraction = () => {
-    setExtractionResult(null);
+    reset();
     setPdfData(null);
-    setError(null);
   };
+
+  // Check if we're in streaming mode (any data has started arriving)
+  const hasData = state.metadata !== null;
+  const isComplete = state.stage === "complete";
+  const completeResult = getCompleteResult();
 
   return (
     <main className="min-h-screen">
-      {!extractionResult ? (
+      {/* Show upload zone when idle or error with no data */}
+      {state.stage === "idle" || (state.stage === "error" && !hasData) ? (
         <div className="flex flex-col items-center justify-center min-h-screen p-8">
           <div className="w-full max-w-2xl">
             <div className="text-center mb-8">
@@ -84,22 +51,30 @@ export default function Home() {
             <UploadZone
               onUpload={handleExtraction}
               isProcessing={isExtracting}
-              error={error}
+              error={state.error}
             />
 
             {isExtracting && (
               <div className="mt-6 text-center">
                 <div className="inline-flex items-center gap-2 text-blue-400">
                   <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-                  <span>Extracting financial data...</span>
+                  <span>Connecting to extraction service...</span>
                 </div>
               </div>
             )}
           </div>
         </div>
-      ) : (
+      ) : isComplete && completeResult ? (
+        /* Show normal dashboard when extraction is complete */
         <ResultsDashboard
-          result={extractionResult}
+          result={completeResult}
+          pdfData={pdfData}
+          onNewExtraction={handleNewExtraction}
+        />
+      ) : (
+        /* Show streaming dashboard during extraction */
+        <StreamingResultsDashboard
+          state={state}
           pdfData={pdfData}
           onNewExtraction={handleNewExtraction}
         />

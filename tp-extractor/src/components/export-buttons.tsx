@@ -230,6 +230,7 @@ Focus Areas: ${tp_analysis.recommended_focus_areas.join(", ") || "None identifie
         onClick={handleCopySummary}
         className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors text-sm"
         title="Copy summary to clipboard"
+        aria-label="Copy summary to clipboard"
       >
         {copiedSummary ? (
           <Check className="w-4 h-4 text-emerald-400" />
@@ -245,6 +246,7 @@ Focus Areas: ${tp_analysis.recommended_focus_areas.join(", ") || "None identifie
         onClick={handleExportJSON}
         className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors text-sm"
         title="Download JSON"
+        aria-label="Download JSON"
       >
         <FileJson className="w-4 h-4" />
         <span className="hidden sm:inline">JSON</span>
@@ -255,6 +257,7 @@ Focus Areas: ${tp_analysis.recommended_focus_areas.join(", ") || "None identifie
         disabled={isExporting}
         className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors text-sm disabled:opacity-50"
         title="Download Excel"
+        aria-label="Download Excel"
       >
         {isExporting ? (
           <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />

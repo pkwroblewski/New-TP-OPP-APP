@@ -27,7 +27,7 @@ interface SummaryCardsProps {
 interface CardProps {
   title: string;
   value: string;
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   icon: React.ReactNode;
   className?: string;
   tooltip?: string;

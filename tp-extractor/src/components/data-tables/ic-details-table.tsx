@@ -14,6 +14,7 @@ export default function ICDetailsTable({ notes, icFinancing }: ICDetailsTablePro
   const hasShares = notes.shares_in_affiliated_details.length > 0;
   const hasCashPooling = notes.cash_pooling.exists;
   const hasRelatedParty = notes.related_party_transactions.length > 0;
+  const hasOffBalanceSheet = notes.off_balance_sheet_commitments.length > 0;
 
   return (
     <div className="space-y-8">
@@ -290,12 +291,32 @@ export default function ICDetailsTable({ notes, icFinancing }: ICDetailsTablePro
         </div>
       )}
 
+      {/* Off-Balance Sheet Commitments */}
+      {hasOffBalanceSheet && (
+        <div>
+          <h3 className="text-lg font-semibold text-slate-100 mb-4">
+            Off-Balance Sheet Commitments
+          </h3>
+          <ul className="space-y-2">
+            {notes.off_balance_sheet_commitments.map((commitment, index) => (
+              <li
+                key={index}
+                className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-lg text-slate-300"
+              >
+                {commitment}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Empty state */}
       {!hasLoansTo &&
         !hasLoansFrom &&
         !hasShares &&
         !hasCashPooling &&
-        !hasRelatedParty && (
+        !hasRelatedParty &&
+        !hasOffBalanceSheet && (
           <div className="text-center py-8 text-slate-400">
             No intercompany details extracted from this document.
           </div>

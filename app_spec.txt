@@ -1,0 +1,575 @@
+<project_specification>
+  <project_name>New-TP-Opp</project_name>
+
+  <overview>
+    A web application that extracts financial data from Luxembourg annual accounts (PDFs) and produces transfer pricing analysis summaries. Upload a PDF, get structured data + TP opportunity flags. Automates 2-3 hours of manual financial statement review into a 30-second upload for transfer pricing professionals.
+  </overview>
+
+  <technology_stack>
+    <frontend>
+      <framework>Next.js 14 (App Router)</framework>
+      <language>TypeScript</language>
+      <styling>Tailwind CSS + shadcn/ui</styling>
+      <theme>Dark mode first (modern, Autocoder-style aesthetic)</theme>
+      <pdf_viewer>react-pdf or pdf.js for inline PDF viewing</pdf_viewer>
+    </frontend>
+    <backend>
+      <runtime>Next.js API Routes (Node.js)</runtime>
+      <database>None (stateless extraction)</database>
+      <validation>Zod for JSON schema validation</validation>
+    </backend>
+    <ai>
+      <provider>Anthropic Claude API</provider>
+      <model>Claude Sonnet</model>
+      <usage>PDF reading + structured data extraction</usage>
+      <cost_estimate>~$0.20-0.30 per extraction</cost_estimate>
+    </ai>
+    <communication>
+      <api>REST API routes</api>
+      <streaming>Server-sent events for real-time extraction progress</streaming>
+    </communication>
+  </technology_stack>
+
+  <prerequisites>
+    <environment_setup>
+      - Node.js 18+ installed
+      - ANTHROPIC_API_KEY environment variable set
+      - npm or pnpm package manager
+    </environment_setup>
+  </prerequisites>
+
+  <feature_count>107</feature_count>
+
+  <design_system>
+    <theme>Dark mode first</theme>
+    <aesthetic>
+      Modern, clean, Autocoder-inspired interface:
+      - Dark background with subtle gradients
+      - Monospace typography for data/numbers
+      - Minimal chrome - content is the focus
+      - Subtle borders and shadows (no heavy dividers)
+      - Color used sparingly but effectively for status/actions
+      - Generous whitespace - not cramped
+      - Professional "Big Four appropriate" appearance
+    </aesthetic>
+    <color_palette>
+      <background>
+        - Primary: slate-900/950 (near black)
+        - Secondary: slate-800 (cards, panels)
+        - Elevated: slate-700 (hover states)
+      </background>
+      <text>
+        - Primary: slate-100 (main text)
+        - Secondary: slate-400 (labels, secondary)
+        - Muted: slate-500 (placeholders)
+      </text>
+      <accent>
+        - Primary: blue-500 (actions, links)
+        - Success: emerald-500 (positive indicators)
+        - Warning: amber-500 (medium priority flags)
+        - Danger: red-500 (high priority flags)
+      </accent>
+      <tp_scores>
+        - Score A (High): red-500 with red-500/10 background
+        - Score B (Medium): amber-500 with amber-500/10 background
+        - Score C (Low): emerald-500 with emerald-500/10 background
+      </tp_scores>
+    </color_palette>
+    <typography>
+      <headings>Inter or system sans-serif, semibold</headings>
+      <body>Inter or system sans-serif, regular</body>
+      <data>JetBrains Mono or system monospace (for numbers, JSON)</data>
+    </typography>
+    <components>
+      - Cards with subtle borders (slate-700/800)
+      - Rounded corners (rounded-lg, rounded-xl)
+      - Smooth transitions (150-200ms)
+      - Loading skeletons with pulse animation
+      - Toast notifications for feedback
+      - Tooltips for additional context
+    </components>
+  </design_system>
+
+  <security_and_access_control>
+    <authentication>
+      <method>None - internal tool, no user accounts</method>
+    </authentication>
+    <data_handling>
+      - PDF files are NOT stored (stateless processing)
+      - Results displayed immediately, not persisted
+      - API key stored in environment variables only
+      - No user data collected or stored
+    </data_handling>
+    <api_security>
+      - Rate limiting on extraction endpoint
+      - File size limits enforced (max 50MB)
+      - File type validation (PDF only)
+      - Request timeout handling
+    </api_security>
+  </security_and_access_control>
+
+  <core_features>
+    <pdf_upload>
+      - Drag-and-drop upload zone with visual feedback
+      - Click to browse file picker
+      - File type validation (PDF only)
+      - File size validation (max 50MB)
+      - Upload progress indicator
+      - Clear/reset uploaded file
+      - Error states for invalid files
+      - Retry mechanism for failed uploads
+    </pdf_upload>
+
+    <extraction_api>
+      - PDF to base64 conversion
+      - Claude API integration with extraction prompt
+      - Streaming response for real-time progress
+      - JSON response parsing
+      - Zod schema validation
+      - Error handling for API failures
+      - Timeout handling (max 60 seconds)
+      - Confidence level detection
+      - Retry logic for transient failures
+      - Cost tracking per extraction
+    </extraction_api>
+
+    <results_metadata>
+      - Company name display
+      - RCS number display
+      - Financial year (start and end dates)
+      - Currency indicator
+      - Account type badge (full/abridged/consolidated)
+      - Extraction confidence indicator (high/medium/low)
+      - Extraction notes/caveats display
+    </results_metadata>
+
+    <summary_cards>
+      - Company info card
+      - Entity type classification (holding/financing/operational/mixed)
+      - Total assets with YoY change percentage
+      - Total IC exposure (assets + liabilities)
+      - TP Opportunity Score (A/B/C) with color coding
+      - Debt-to-equity ratio display
+      - Employee count indicator
+      - Cards animate in as data streams
+      - Tooltips explaining each metric
+    </summary_cards>
+
+    <tp_flags_section>
+      - Priority-based flag display (high/medium/low)
+      - Color-coded flag indicators (red/amber/green)
+      - Category labels for each flag
+      - Affected amount display (EUR formatted)
+      - Source citation for each flag (note reference, page)
+      - Expand/collapse flag details
+      - Filter flags by priority
+      - Sort flags by amount or priority
+      - Flag count summary
+      - Caveats and context displayed
+    </tp_flags_section>
+
+    <data_tables>
+      - Balance Sheet tab
+        - Assets section (fixed, current, prepayments)
+        - Liabilities section (equity, provisions, creditors)
+        - IC items highlighted with accent color
+        - Current year and previous year columns
+        - YoY change calculation
+        - Collapsible subsections
+      - P&L tab
+        - Income items
+        - Expense items
+        - IC income/expense highlighted
+        - Current and previous year columns
+        - Operating result, financial result, profit for year
+      - IC Details tab
+        - Shares in affiliated undertakings (with counterparty details)
+        - Loans to affiliated (counterparty, currency, rate, maturity)
+        - Loans from affiliated (counterparty, currency, rate, maturity)
+        - Cash pooling details
+        - Related party transactions
+      - Raw JSON tab
+        - Full extraction data in formatted JSON
+        - Syntax highlighting
+        - Copy to clipboard button
+        - Collapsible sections
+      - Tab navigation with keyboard support
+      - Search within tables
+      - Row hover highlighting
+      - Sticky headers on scroll
+    </data_tables>
+
+    <inline_pdf_viewer>
+      - Split-screen layout (PDF left, data right)
+      - PDF rendering with page navigation
+      - Zoom controls (fit width, fit page, custom)
+      - Page number indicator
+      - Toggle PDF panel visibility
+      - Resizable split panels
+      - Scroll sync hints (highlight source of selected data)
+      - Full-screen PDF option
+    </inline_pdf_viewer>
+
+    <export_functions>
+      - Excel download (formatted workbook)
+        - Metadata sheet
+        - Balance Sheet sheet
+        - P&L sheet
+        - IC Details sheet
+        - TP Analysis sheet
+      - JSON download (raw extraction)
+      - Copy summary (key findings for email)
+        - Company name, year, score
+        - Key flags summary
+        - One-click copy to clipboard
+      - Copy individual cells/values on click
+      - Export loading states
+      - Success confirmation
+    </export_functions>
+
+    <streaming_ux>
+      - Results populate progressively as extraction streams
+      - Metadata appears first
+      - Balance sheet populates section by section
+      - P&L populates next
+      - TP flags animate in at the end
+      - Loading skeletons show structure before data
+      - Progress indicator with current step
+    </streaming_ux>
+
+    <sticky_elements>
+      - TP Score badge stays visible on scroll
+      - Key flags summary sticky
+      - Export buttons accessible from anywhere
+    </sticky_elements>
+
+    <error_handling_ui>
+      - Invalid PDF format error message
+      - Unreadable PDF error with retry option
+      - Low confidence warning banner
+      - API timeout error with retry
+      - Network failure handling
+      - Graceful degradation for partial extractions
+      - Clear error messages (not technical jargon)
+    </error_handling_ui>
+
+    <accessibility>
+      - Keyboard navigation for all interactive elements
+      - Focus indicators visible
+      - ARIA labels on icon buttons
+      - Screen reader compatible data tables
+      - Sufficient color contrast (WCAG AA)
+      - Tab order logical
+    </accessibility>
+
+    <responsive_design>
+      - Desktop optimized (primary use case)
+      - Tablet layout (collapsed sidebar, stacked panels)
+      - PDF viewer hidden on mobile (data-only view)
+      - Touch-friendly controls
+      - No horizontal scroll
+    </responsive_design>
+  </core_features>
+
+  <extraction_prompt>
+    <location>See TP_EXTRACTOR_PROMPT.md for full prompt specification</location>
+    <summary>
+      System prompt establishes Claude as Luxembourg TP specialist.
+      User prompt contains JSON schema to follow.
+      PDF attached as document.
+      Response is pure JSON (no markdown).
+      Critical rules:
+      - Extract EXACT figures from document
+      - Use null for missing data (not zero)
+      - Distinguish between "0" (disclosed) and null (not found)
+      - Extract current year AND previous year
+      - Include page references for major data points
+      - All values in EUR
+    </summary>
+  </extraction_prompt>
+
+  <tp_analysis_logic>
+    <location>See TP_ANALYSIS_CONFIG.md for configurable rules</location>
+    <debt_equity_analysis>
+      - Calculate: debt funding participations / total equity
+      - No statutory safe harbour in Luxembourg
+      - Thresholds based on market practice:
+        - D/E &lt;= 1.5x (&lt;= 60% debt): No flag
+        - D/E 1.5x-5.67x (60-85% debt): Low attention
+        - D/E 5.67x-10x (85-90% debt): Medium attention
+        - D/E &gt; 10x (&gt; 90% debt): High attention
+      - Tax risks: deduction denial, recharacterisation to dividend
+    </debt_equity_analysis>
+    <spread_analysis>
+      - Implied lending rate = IC interest income / IC loans granted
+      - Implied borrowing rate = IC interest expense / IC loans received
+      - Spread = lending rate - borrowing rate
+      - Flags:
+        - Zero spread: &lt; 10 bps
+        - Low spread: &lt; 25 bps
+        - Negative spread: borrowing &gt; lending (unusual)
+      - Caveats: implied rates are estimates, currency/timing effects
+    </spread_analysis>
+    <scoring>
+      - Score A (High): Zero/negative spread, OR IC &gt; EUR 100M, OR D/E &gt; 10x, OR 2+ high flags
+      - Score B (Medium): IC &gt; EUR 20M, OR cash pooling, OR material services, OR D/E 5.67-10x
+      - Score C (Low): Default if not A or B
+    </scoring>
+  </tp_analysis_logic>
+
+  <json_response_schema>
+    <structure>
+      metadata:
+        - company_name, rcs_number, address
+        - financial_year_start, financial_year_end
+        - currency, account_type
+        - extraction_confidence, extraction_notes
+
+      balance_sheet:
+        - assets (fixed_assets, current_assets, prepayments, total)
+        - liabilities (capital_and_reserves, provisions, creditors, total)
+        - IC items clearly identified within each section
+
+      profit_and_loss:
+        - All P&L line items with current/previous year
+        - IC income and expense separated
+
+      notes_extraction:
+        - shares_in_affiliated_details (array with counterparty info)
+        - loans_to_affiliated_details (counterparty, currency, rate, maturity)
+        - loans_from_affiliated_details (counterparty, currency, rate, maturity)
+        - related_party_transactions
+        - cash_pooling (exists, counterparty, balances)
+        - employees (FTE count)
+        - off_balance_sheet_commitments
+
+      entity_classification:
+        - primary_type (operational/holding/financing/ip_holding/mixed)
+        - activities_description
+        - substance_indicators
+
+      tp_analysis:
+        - ic_financing (loans, interest, rates, spread, flags)
+        - ic_services (income, expense, net position)
+        - capitalization (equity, debt, D/E ratio)
+        - cash_pooling (identified, counterparty, positions)
+        - priority_flags (array with priority, category, description, amount, source)
+        - overall_tp_opportunity_score (A/B/C)
+        - score_rationale
+        - recommended_focus_areas
+        - data_quality_notes
+    </structure>
+  </json_response_schema>
+
+  <ui_layout>
+    <main_structure>
+      Single-page application with two main states:
+      1. Upload state: Centered upload zone
+      2. Results state: Full dashboard layout
+    </main_structure>
+    <upload_state>
+      - Dark background with subtle gradient
+      - Centered card with drag-drop zone
+      - Company branding/logo at top
+      - Clear call-to-action
+      - Processing state with streaming indicator
+    </upload_state>
+    <results_state>
+      - Optional split-screen: PDF viewer (left) + Results (right)
+      - Results panel layout:
+        - Sticky header: Company name, year, TP score badge
+        - Summary cards row (4-5 cards)
+        - TP Flags section (expandable)
+        - Tabbed data view (Balance Sheet, P&L, IC Details, Raw JSON)
+        - Footer: Export buttons
+      - Floating action: "New extraction" button
+    </results_state>
+  </ui_layout>
+
+  <file_structure>
+    tp-extractor/
+    ├── src/
+    │   ├── app/
+    │   │   ├── page.tsx                    # Main page (upload + results)
+    │   │   ├── layout.tsx                  # Root layout with theme
+    │   │   ├── globals.css                 # Tailwind + custom styles
+    │   │   └── api/
+    │   │       └── extract/
+    │   │           └── route.ts            # Extraction API endpoint
+    │   ├── components/
+    │   │   ├── ui/                         # shadcn/ui components
+    │   │   ├── upload-zone.tsx             # Drag-drop upload
+    │   │   ├── results-dashboard.tsx       # Main results container
+    │   │   ├── summary-cards.tsx           # Metric cards
+    │   │   ├── tp-flags.tsx                # Priority flags display
+    │   │   ├── data-tables/
+    │   │   │   ├── balance-sheet-table.tsx
+    │   │   │   ├── pnl-table.tsx
+    │   │   │   ├── ic-details-table.tsx
+    │   │   │   └── raw-json-viewer.tsx
+    │   │   ├── pdf-viewer.tsx              # Inline PDF display
+    │   │   ├── export-buttons.tsx          # Download actions
+    │   │   └── sticky-score.tsx            # Floating TP score
+    │   ├── lib/
+    │   │   ├── claude.ts                   # Claude API client
+    │   │   ├── prompts.ts                  # Extraction prompts
+    │   │   ├── schema.ts                   # Zod validation schemas
+    │   │   ├── excel.ts                    # Excel generation (xlsx)
+    │   │   ├── analysis.ts                 # TP analysis logic
+    │   │   └── utils.ts                    # Formatting, helpers
+    │   └── types/
+    │       └── extraction.ts               # TypeScript interfaces
+    ├── public/
+    │   └── logo.svg                        # App logo
+    ├── .env.local                          # ANTHROPIC_API_KEY
+    ├── tailwind.config.ts
+    ├── tsconfig.json
+    └── package.json
+  </file_structure>
+
+  <implementation_steps>
+    <step number="1">
+      <title>Project Setup</title>
+      <tasks>
+        - Create Next.js 14 project with TypeScript
+        - Configure Tailwind CSS with dark theme
+        - Install and configure shadcn/ui
+        - Set up project structure
+        - Configure environment variables
+      </tasks>
+    </step>
+    <step number="2">
+      <title>Core Types and Schemas</title>
+      <tasks>
+        - Define TypeScript interfaces for extraction result
+        - Create Zod schemas for validation
+        - Set up type-safe API response handling
+      </tasks>
+    </step>
+    <step number="3">
+      <title>Claude API Integration</title>
+      <tasks>
+        - Implement Claude API client
+        - Set up extraction prompt from specification
+        - Implement PDF to base64 conversion
+        - Add streaming response handling
+        - Add error handling and retries
+      </tasks>
+    </step>
+    <step number="4">
+      <title>Upload Interface</title>
+      <tasks>
+        - Build drag-drop upload zone
+        - Add file validation
+        - Implement loading/processing states
+        - Create streaming progress indicator
+      </tasks>
+    </step>
+    <step number="5">
+      <title>Results Dashboard - Summary</title>
+      <tasks>
+        - Build summary cards component
+        - Implement TP score display
+        - Add streaming data population
+        - Create tooltips and explanations
+      </tasks>
+    </step>
+    <step number="6">
+      <title>Results Dashboard - TP Flags</title>
+      <tasks>
+        - Build priority flags section
+        - Implement color-coded indicators
+        - Add source citations
+        - Create expand/collapse functionality
+        - Add filtering and sorting
+      </tasks>
+    </step>
+    <step number="7">
+      <title>Results Dashboard - Data Tables</title>
+      <tasks>
+        - Build Balance Sheet table with collapsible sections
+        - Build P&L table
+        - Build IC Details table
+        - Build Raw JSON viewer with syntax highlighting
+        - Implement tab navigation
+        - Add search within tables
+      </tasks>
+    </step>
+    <step number="8">
+      <title>Inline PDF Viewer</title>
+      <tasks>
+        - Integrate react-pdf or pdf.js
+        - Build split-screen layout
+        - Add page navigation and zoom
+        - Implement panel resizing
+        - Add toggle visibility
+      </tasks>
+    </step>
+    <step number="9">
+      <title>Export Functionality</title>
+      <tasks>
+        - Implement Excel generation with multiple sheets
+        - Add JSON download
+        - Create copy summary feature
+        - Add one-click copy for individual values
+      </tasks>
+    </step>
+    <step number="10">
+      <title>Polish and Testing</title>
+      <tasks>
+        - Refine animations and transitions
+        - Test with multiple Luxembourg PDF formats
+        - Optimize performance
+        - Add keyboard shortcuts
+        - Ensure accessibility compliance
+        - Cross-browser testing
+      </tasks>
+    </step>
+  </implementation_steps>
+
+  <success_criteria>
+    <functionality>
+      - PDF upload works reliably with Luxembourg eCDF format
+      - Extraction completes in under 30 seconds
+      - All financial data extracted accurately
+      - TP flags correctly identify opportunities per analysis config
+      - Export produces usable Excel workbook
+    </functionality>
+    <user_experience>
+      - Interface feels modern and professional
+      - Loading states provide clear feedback
+      - Results are easy to scan and understand
+      - Data is verifiable against source PDF
+      - One-click actions for common tasks (copy, export)
+    </user_experience>
+    <technical_quality>
+      - TypeScript types cover all data structures
+      - Zod validation catches malformed responses
+      - Error handling provides clear guidance
+      - No console errors during normal operation
+      - Responsive down to tablet size
+    </technical_quality>
+    <design_polish>
+      - Dark mode aesthetic consistent throughout
+      - Typography hierarchy clear
+      - Color usage meaningful (not decorative)
+      - Animations smooth and purposeful
+      - Professional enough for Big Four use
+    </design_polish>
+  </success_criteria>
+
+  <excluded_from_mvp>
+    - User accounts / authentication
+    - Extraction history / persistence
+    - Batch processing (multiple PDFs)
+    - Database storage
+    - Year-over-year comparison across extractions
+    - CRM integration
+    - Multi-language support
+  </excluded_from_mvp>
+
+  <reference_documents>
+    <document>TP_EXTRACTOR_PROMPT.md - Full extraction prompt specification</document>
+    <document>TP_ANALYSIS_CONFIG.md - Configurable analysis rules</document>
+  </reference_documents>
+</project_specification>
