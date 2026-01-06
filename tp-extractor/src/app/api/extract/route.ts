@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractFromPDF } from "@/lib/claude";
+import { DEMO_EXTRACTION_RESULT } from "@/lib/demo-data";
+
+// Check if API key is configured
+const isApiKeyConfigured = () => {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  return apiKey && apiKey !== "your_api_key_here" && apiKey.length > 10;
+};
 
 // Rate limiting - simple in-memory store
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
@@ -62,6 +69,14 @@ export async function POST(request: NextRequest) {
         { error: "File too large. Maximum size is 50MB." },
         { status: 400 }
       );
+    }
+
+    // Check if API key is configured - if not, return demo data
+    if (!isApiKeyConfigured()) {
+      console.log("API key not configured - returning demo data");
+      // Simulate extraction delay for realistic UX
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return NextResponse.json(DEMO_EXTRACTION_RESULT);
     }
 
     // Convert file to base64
