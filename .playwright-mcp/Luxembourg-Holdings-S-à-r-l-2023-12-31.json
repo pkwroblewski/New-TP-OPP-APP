@@ -14,6 +14,16 @@
       "Configure ANTHROPIC_API_KEY to enable real PDF extraction"
     ]
   },
+  "entity_classification": {
+    "primary_type": "holding",
+    "activities_description": "The company's principal activity is the holding of participations in affiliated companies and the provision of intra-group financing and management services.",
+    "substance_indicators": [
+      "2 full-time employees based in Luxembourg",
+      "Board meetings held quarterly in Luxembourg",
+      "Local bank accounts and treasury management",
+      "Registered office with dedicated space"
+    ]
+  },
   "balance_sheet": {
     "fixed_assets": {
       "items": [
@@ -299,16 +309,6 @@
       "Letter of support to UK Services Ltd"
     ]
   },
-  "entity_classification": {
-    "primary_type": "holding",
-    "activities_description": "The company's principal activity is the holding of participations in affiliated companies and the provision of intra-group financing and management services.",
-    "substance_indicators": [
-      "2 full-time employees based in Luxembourg",
-      "Board meetings held quarterly in Luxembourg",
-      "Local bank accounts and treasury management",
-      "Registered office with dedicated space"
-    ]
-  },
   "tp_analysis": {
     "ic_financing": {
       "total_loans_granted": 42000000,
@@ -380,6 +380,5 @@
       "Full extraction from actual PDF will provide verified figures",
       "Configure ANTHROPIC_API_KEY to enable real extractions"
     ]
-  },
-  "extraction_cost_usd": 0
+  }
 }

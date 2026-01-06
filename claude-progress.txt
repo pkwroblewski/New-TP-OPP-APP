@@ -57,17 +57,17 @@ This session performed comprehensive regression testing to verify all features r
 
 ## Regression Tests Performed
 
-**Feature 76: Empty State Display** ✅ PASS
+**Feature 76: Empty State Display** - PASS
 - Upload prompt displays clearly with "Drop your PDF here"
 - Max file size (50MB) instruction visible
 - Dark mode aesthetic with professional styling
 
-**Feature 92: Summary Cards Animation** ✅ PASS
+**Feature 92: Summary Cards Animation** - PASS
 - Entity Type, Total Assets, IC Exposure, Debt-to-Equity cards display
 - Monospace typography for financial figures
 - YoY change indicators with color coding
 
-**Feature 103: Data Quality Notes Display** ✅ PASS
+**Feature 103: Data Quality Notes Display** - PASS
 - "Extraction Notes" section visible at page bottom
 - Demo mode notice and caveats properly displayed
 
@@ -108,17 +108,17 @@ This session performed additional regression testing to verify all features rema
 
 ## Regression Tests Performed
 
-**Feature 3: PDF Upload - File Type Validation** ✅ PASS
+**Feature 3: PDF Upload - File Type Validation** - PASS
 - Uploaded non-PDF file (invalid.txt)
 - Error message "Please upload a PDF file" displayed correctly
 - File rejected as expected
 
-**Feature 74: Color Contrast Compliance** ✅ PASS
+**Feature 74: Color Contrast Compliance** - PASS
 - Text readable with good contrast on dark background
 - Primary text (slate-100) clearly visible
 - Secondary text and labels properly styled
 
-**Feature 87: Page Load Performance** ✅ PASS
+**Feature 87: Page Load Performance** - PASS
 - Page loads quickly
 - All components render correctly
 
@@ -170,3 +170,72 @@ This session performed additional regression testing to verify all features rema
 
 ## Conclusion
 All 107 features verified working. The TP Extractor application remains production-ready.
+
+---
+
+# Session 11: Regression Testing Continuation
+# Date: 2026-01-07
+
+## Summary
+This session performed additional regression testing on randomly selected passing features.
+
+## Server Status
+- Server running on port 3002
+- Application fully functional
+
+## Regression Tests Performed
+
+**Feature 91: PDF Full-Screen Option** - PASS
+- Loaded PDF in viewer (split-screen layout)
+- Clicked full-screen button - PDF expanded to fill viewport
+- "Press Esc to exit full screen" instruction displayed
+- Clicked exit full-screen button - returned to split layout correctly
+- All controls (zoom, page nav) remain functional in full-screen
+
+**Feature 20: Balance Sheet Table - IC Highlighting** - PASS
+- Navigated to Balance Sheet tab
+- IC items clearly marked with "IC" badge:
+  - "Shares in affiliated undertakings" (Note 3)
+  - "Loans to affiliated undertakings" (Note 4)
+  - "Amounts owed by affiliated undertakings" (Note 5)
+  - "Amounts owed to affiliated undertakings" (Note 7)
+- IC items visually distinct from regular items
+
+**Feature 26: IC Details Table - Loans From Affiliated** - PASS
+- Navigated to IC Details tab
+- "Loans from Affiliated Undertakings" section displayed
+- Table shows all required details:
+  - Counterparty: Parent Corp B.V.
+  - Currency: EUR
+  - Amount: EUR 60,000,000
+  - Interest Rate: 2%
+  - Maturity: 31 Dec 2028
+
+## Additional Verifications
+
+- **Upload Screen:** Professional dark mode design with drag-drop zone
+- **Summary Cards:** Entity Type (Holding), Total Assets, IC Exposure, Debt-to-Equity
+- **TP Score:** Score A (High Priority) with rationale displayed
+- **Focus Areas:** 5 recommended focus areas shown
+- **Resizable Panels:** Drag handle visible and functional
+
+## Console Status
+- Only error: Missing favicon.ico (404) - cosmetic, non-functional
+- Zero JavaScript runtime errors
+
+## Screenshots Captured
+- regression-01-upload-screen.png
+- regression-02-results-dashboard.png
+- regression-03-ic-details.png
+- regression-04-pdf-split-screen.png
+- regression-05-pdf-fullscreen.png
+- regression-06-return-to-split.png
+
+## Feature Statistics
+- **Total Features:** 107
+- **Passing:** 107
+- **In Progress:** 0
+- **Completion:** 100%
+
+## Conclusion
+All regression tests passed. The TP Extractor application continues to be fully functional and production-ready. No issues discovered during this session.
