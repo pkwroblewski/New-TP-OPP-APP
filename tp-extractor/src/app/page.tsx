@@ -8,10 +8,14 @@ import { useStreamingExtraction } from "@/hooks/useStreamingExtraction";
 
 export default function Home() {
   const [pdfData, setPdfData] = useState<string | null>(null);
+  const [lastFile, setLastFile] = useState<File | null>(null);
   const { state, isExtracting, startExtraction, reset, getCompleteResult } =
     useStreamingExtraction();
 
   const handleExtraction = async (file: File) => {
+    // Store the file for potential retry
+    setLastFile(file);
+
     // Convert file to base64 for PDF viewer
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -23,9 +27,16 @@ export default function Home() {
     await startExtraction(file);
   };
 
+  const handleRetry = () => {
+    if (lastFile) {
+      handleExtraction(lastFile);
+    }
+  };
+
   const handleNewExtraction = () => {
     reset();
     setPdfData(null);
+    setLastFile(null);
   };
 
   // Check if we're in streaming mode (any data has started arriving)
@@ -52,6 +63,8 @@ export default function Home() {
               onUpload={handleExtraction}
               isProcessing={isExtracting}
               error={state.error}
+              onRetry={handleRetry}
+              lastFile={lastFile}
             />
 
             {isExtracting && (

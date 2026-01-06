@@ -2,18 +2,22 @@
 
 import { useCallback, useState, useRef } from "react";
 import { cn, isFilePDF, isFileSizeValid } from "@/lib/utils";
-import { Upload, FileText, X, AlertCircle } from "lucide-react";
+import { Upload, FileText, X, AlertCircle, RefreshCw } from "lucide-react";
 
 interface UploadZoneProps {
   onUpload: (file: File) => void;
   isProcessing: boolean;
   error: string | null;
+  onRetry?: () => void;
+  lastFile?: File | null;
 }
 
 export default function UploadZone({
   onUpload,
   isProcessing,
   error,
+  onRetry,
+  lastFile,
 }: UploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -84,7 +88,14 @@ export default function UploadZone({
     }
   }, []);
 
+  const handleRetry = useCallback(() => {
+    if (onRetry && lastFile) {
+      onRetry();
+    }
+  }, [onRetry, lastFile]);
+
   const displayError = validationError || error;
+  const showRetry = error && onRetry && lastFile && !isProcessing;
 
   return (
     <div className="w-full">
@@ -169,7 +180,17 @@ export default function UploadZone({
       {displayError && (
         <div className="flex items-center gap-2 mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
           <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <span>{displayError}</span>
+          <span className="flex-1">{displayError}</span>
+          {showRetry && (
+            <button
+              onClick={handleRetry}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/20 hover:bg-red-500/30 rounded-md transition-colors text-sm font-medium"
+              aria-label="Try again"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Try Again
+            </button>
+          )}
         </div>
       )}
     </div>

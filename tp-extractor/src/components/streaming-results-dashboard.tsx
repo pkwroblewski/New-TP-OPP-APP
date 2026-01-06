@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { StreamingState } from "@/hooks/useStreamingExtraction";
 import SummaryCards from "./summary-cards";
 import TPFlags from "./tp-flags";
@@ -35,6 +35,7 @@ export default function StreamingResultsDashboard({
   onNewExtraction,
 }: StreamingResultsDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabType>("balance-sheet");
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const { metadata, entity_classification, balance_sheet, profit_and_loss, notes_extraction, tp_analysis, extraction_cost_usd, stage } = state;
   const isLowConfidence = metadata?.extraction_confidence === "low";
@@ -46,6 +47,41 @@ export default function StreamingResultsDashboard({
     { id: "ic-details", label: "IC Details" },
     { id: "raw-json", label: "Raw JSON" },
   ];
+
+  const handleTabKeyDown = useCallback(
+    (e: React.KeyboardEvent, currentIndex: number) => {
+      let newIndex: number | null = null;
+
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          newIndex = currentIndex > 0 ? currentIndex - 1 : tabs.length - 1;
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          newIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
+          break;
+        case "Home":
+          e.preventDefault();
+          newIndex = 0;
+          break;
+        case "End":
+          e.preventDefault();
+          newIndex = tabs.length - 1;
+          break;
+        case "Enter":
+        case " ":
+          e.preventDefault();
+          setActiveTab(tabs[currentIndex].id);
+          break;
+      }
+
+      if (newIndex !== null) {
+        tabRefs.current[newIndex]?.focus();
+      }
+    },
+    [tabs]
+  );
 
   // Build the complete result for export buttons and raw JSON viewer
   const completeResult: ExtractionResult | null =
@@ -178,18 +214,23 @@ export default function StreamingResultsDashboard({
           {balance_sheet ? (
             <div className="bg-slate-800 rounded-xl border border-slate-700">
               {/* Tab navigation */}
-              <div className="flex border-b border-slate-700">
-                {tabs.map((tab) => (
+              <div className="flex border-b border-slate-700" role="tablist" aria-label="Data sections">
+                {tabs.map((tab, index) => (
                   <button
                     key={tab.id}
+                    ref={(el) => { tabRefs.current[index] = el; }}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-6 py-3 text-sm font-medium transition-colors relative ${
+                    onKeyDown={(e) => handleTabKeyDown(e, index)}
+                    className={`px-6 py-3 text-sm font-medium transition-colors relative focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
                       activeTab === tab.id
                         ? "text-blue-400"
                         : "text-slate-400 hover:text-slate-300"
                     }`}
                     role="tab"
                     aria-selected={activeTab === tab.id}
+                    aria-controls={`tabpanel-${tab.id}`}
+                    tabIndex={activeTab === tab.id ? 0 : -1}
+                    id={`tab-${tab.id}`}
                   >
                     {tab.label}
                     {activeTab === tab.id && (
@@ -200,7 +241,12 @@ export default function StreamingResultsDashboard({
               </div>
 
               {/* Tab content */}
-              <div className="p-6">
+              <div
+                className="p-6"
+                role="tabpanel"
+                id={`tabpanel-${activeTab}`}
+                aria-labelledby={`tab-${activeTab}`}
+              >
                 {activeTab === "balance-sheet" && (
                   <BalanceSheetTable balanceSheet={balance_sheet} />
                 )}

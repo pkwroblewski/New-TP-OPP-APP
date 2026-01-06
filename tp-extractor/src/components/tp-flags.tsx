@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { TPFlag } from "@/types/extraction";
 import { formatEUR, getPriorityClasses } from "@/lib/utils";
-import { ChevronDown, ChevronUp, AlertTriangle, Info, Filter } from "lucide-react";
+import { ChevronDown, ChevronUp, AlertTriangle, Info, Filter, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
 interface TPFlagsProps {
   flags: TPFlag[];
@@ -13,6 +13,7 @@ export default function TPFlags({ flags }: TPFlagsProps) {
   const [expandedFlags, setExpandedFlags] = useState<Set<number>>(new Set());
   const [filterPriority, setFilterPriority] = useState<"all" | "high" | "medium" | "low">("all");
   const [sortBy, setSortBy] = useState<"priority" | "amount">("priority");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const toggleFlag = (index: number) => {
     setExpandedFlags((prev) => {
@@ -26,6 +27,10 @@ export default function TPFlags({ flags }: TPFlagsProps) {
     });
   };
 
+  const toggleSortDirection = () => {
+    setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+  };
+
   // Filter flags
   const filteredFlags = flags.filter((flag) =>
     filterPriority === "all" ? true : flag.priority === filterPriority
@@ -35,12 +40,14 @@ export default function TPFlags({ flags }: TPFlagsProps) {
   const sortedFlags = [...filteredFlags].sort((a, b) => {
     if (sortBy === "priority") {
       const priorityOrder = { high: 0, medium: 1, low: 2 };
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
+      const result = priorityOrder[a.priority] - priorityOrder[b.priority];
+      return sortDirection === "asc" ? -result : result;
     } else {
-      // Sort by amount descending
+      // Sort by amount
       const amountA = a.affected_amount || 0;
       const amountB = b.affected_amount || 0;
-      return amountB - amountA;
+      const result = amountB - amountA;
+      return sortDirection === "asc" ? -result : result;
     }
   });
 
@@ -106,15 +113,29 @@ export default function TPFlags({ flags }: TPFlagsProps) {
               </select>
             </div>
 
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="bg-slate-700 border-0 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:ring-2 focus:ring-blue-500"
-              aria-label="Sort by"
-            >
-              <option value="priority">Sort by Priority</option>
-              <option value="amount">Sort by Amount</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="bg-slate-700 border-0 rounded-lg px-3 py-1.5 text-sm text-slate-300 focus:ring-2 focus:ring-blue-500"
+                aria-label="Sort by"
+              >
+                <option value="priority">Sort by Priority</option>
+                <option value="amount">Sort by Amount</option>
+              </select>
+              <button
+                onClick={toggleSortDirection}
+                className="p-1.5 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors"
+                aria-label={`Sort ${sortDirection === "desc" ? "descending" : "ascending"}, click to toggle`}
+                title={sortDirection === "desc" ? "Descending (highest first)" : "Ascending (lowest first)"}
+              >
+                {sortDirection === "desc" ? (
+                  <ArrowDown className="w-4 h-4 text-slate-300" />
+                ) : (
+                  <ArrowUp className="w-4 h-4 text-slate-300" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
