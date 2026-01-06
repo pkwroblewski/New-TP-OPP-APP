@@ -114,3 +114,31 @@ All test screenshots stored in `.playwright-mcp/` directory:
 - No console errors during normal operation
 - File validation working correctly (type and size)
 - API error handling improved
+
+## Additional Testing (Session 2 continued)
+
+### Accessibility Verification
+- ✅ Upload zone has `role="button"` for screen readers
+- ✅ Upload zone has `tabIndex={0}` for keyboard focus
+- ✅ Upload zone has `aria-label="Upload PDF file"`
+- ✅ File input has `aria-label="File input"`
+- ✅ Clear button has `aria-label="Clear file"`
+- ✅ Keyboard navigation works (Tab to focus, Enter/Space to activate)
+- ✅ Focus ring visible when element is focused (blue border)
+
+### Responsive Design Verification
+- ✅ Mobile (375px): Layout adapts, upload zone fits screen
+- ✅ Tablet (768px): Layout adapts, upload zone centered
+- ✅ Desktop (1280px): Layout optimal, upload zone prominent
+
+### Additional Screenshots
+- `keyboard-focus-ring.png` - Focus state visibility
+- `mobile-layout.png` - Mobile viewport (375x667)
+- `tablet-layout.png` - Tablet viewport (768x1024)
+- `desktop-layout.png` - Desktop viewport (1280x720)
+
+## Summary
+
+All 5 PDF upload features are verified and passing. The remaining 102 features require the Anthropic API key to be configured in order to test the extraction and results functionality.
+
+**Key accomplishment:** The upload flow is fully functional with proper validation, accessibility, and responsive design.
