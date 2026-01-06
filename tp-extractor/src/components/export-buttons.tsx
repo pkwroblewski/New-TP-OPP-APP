@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ExtractionResult } from "@/types/extraction";
 import { copyToClipboard, formatEUR } from "@/lib/utils";
 import { Download, Copy, FileSpreadsheet, FileJson, Check } from "lucide-react";
+import { useToast } from "@/components/ui/toast";
 
 interface ExportButtonsProps {
   result: ExtractionResult;
@@ -12,6 +13,7 @@ interface ExportButtonsProps {
 export default function ExportButtons({ result }: ExportButtonsProps) {
   const [copiedSummary, setCopiedSummary] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const { addToast } = useToast();
 
   const handleCopySummary = async () => {
     const { metadata, tp_analysis, balance_sheet } = result;
@@ -47,21 +49,30 @@ Focus Areas: ${tp_analysis.recommended_focus_areas.join(", ") || "None identifie
     const success = await copyToClipboard(summary);
     if (success) {
       setCopiedSummary(true);
+      addToast("success", "Summary copied to clipboard");
       setTimeout(() => setCopiedSummary(false), 2000);
+    } else {
+      addToast("error", "Failed to copy summary");
     }
   };
 
   const handleExportJSON = () => {
-    const json = JSON.stringify(result, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${result.metadata.company_name?.replace(/\s+/g, "_") || "extraction"}_${result.metadata.financial_year_end || "data"}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const json = JSON.stringify(result, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${result.metadata.company_name?.replace(/\s+/g, "_") || "extraction"}_${result.metadata.financial_year_end || "data"}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      addToast("success", "JSON file downloaded");
+    } catch (error) {
+      console.error("Export error:", error);
+      addToast("error", "Failed to export JSON");
+    }
   };
 
   const handleExportExcel = async () => {
@@ -217,8 +228,10 @@ Focus Areas: ${tp_analysis.recommended_focus_areas.join(", ") || "None identifie
         workbook,
         `${result.metadata.company_name?.replace(/\s+/g, "_") || "extraction"}_${result.metadata.financial_year_end || "data"}.xlsx`
       );
+      addToast("success", "Excel file downloaded");
     } catch (error) {
       console.error("Export error:", error);
+      addToast("error", "Failed to export Excel file");
     } finally {
       setIsExporting(false);
     }

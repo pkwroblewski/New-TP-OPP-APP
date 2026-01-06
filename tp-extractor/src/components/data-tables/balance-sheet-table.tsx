@@ -10,6 +10,7 @@ import {
   cn,
 } from "@/lib/utils";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
+import CopyableCell from "@/components/ui/copyable-cell";
 
 interface BalanceSheetTableProps {
   balanceSheet: BalanceSheet;
@@ -67,10 +68,10 @@ function Section({
           </div>
         </td>
         <td className="px-4 py-3 text-right font-mono font-medium text-slate-200">
-          {formatEUR(total)}
+          <CopyableCell value={total} displayValue={formatEUR(total)} />
         </td>
         <td className="px-4 py-3 text-right font-mono text-slate-400">
-          {formatEUR(previousYearTotal)}
+          <CopyableCell value={previousYearTotal} displayValue={formatEUR(previousYearTotal)} />
         </td>
         <td className={cn("px-4 py-3 text-right font-mono", getYoYChangeColor(yoyChange))}>
           {formatYoYChange(yoyChange)}
@@ -99,10 +100,10 @@ function Section({
                 {item.note_reference}
               </td>
               <td className="px-4 py-2 text-right font-mono text-slate-300">
-                {formatEUR(item.current_year)}
+                <CopyableCell value={item.current_year} displayValue={formatEUR(item.current_year)} />
               </td>
               <td className="px-4 py-2 text-right font-mono text-slate-500">
-                {formatEUR(item.previous_year)}
+                <CopyableCell value={item.previous_year} displayValue={formatEUR(item.previous_year)} />
               </td>
               <td className={cn("px-4 py-2 text-right font-mono text-sm", getYoYChangeColor(itemYoY))}>
                 {formatYoYChange(itemYoY)}
@@ -206,10 +207,10 @@ export default function BalanceSheetTable({
                 TOTAL ASSETS
               </td>
               <td className="px-4 py-3 text-right font-mono text-slate-100">
-                {formatEUR(balanceSheet.total_assets)}
+                <CopyableCell value={balanceSheet.total_assets} displayValue={formatEUR(balanceSheet.total_assets)} />
               </td>
               <td className="px-4 py-3 text-right font-mono text-slate-400">
-                {formatEUR(balanceSheet.previous_year_total_assets)}
+                <CopyableCell value={balanceSheet.previous_year_total_assets} displayValue={formatEUR(balanceSheet.previous_year_total_assets)} />
               </td>
               <td className={cn("px-4 py-3 text-right font-mono", getYoYChangeColor(totalAssetsYoY))}>
                 {formatYoYChange(totalAssetsYoY)}
@@ -256,10 +257,10 @@ export default function BalanceSheetTable({
                 TOTAL LIABILITIES
               </td>
               <td className="px-4 py-3 text-right font-mono text-slate-100">
-                {formatEUR(balanceSheet.total_liabilities)}
+                <CopyableCell value={balanceSheet.total_liabilities} displayValue={formatEUR(balanceSheet.total_liabilities)} />
               </td>
               <td className="px-4 py-3 text-right font-mono text-slate-400">
-                {formatEUR(balanceSheet.previous_year_total_liabilities)}
+                <CopyableCell value={balanceSheet.previous_year_total_liabilities} displayValue={formatEUR(balanceSheet.previous_year_total_liabilities)} />
               </td>
               <td className={cn("px-4 py-3 text-right font-mono", getYoYChangeColor(totalLiabilitiesYoY))}>
                 {formatYoYChange(totalLiabilitiesYoY)}
