@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { ExtractionResult } from "@/types/extraction";
 import SummaryCards from "./summary-cards";
 import TPFlags from "./tp-flags";
@@ -10,8 +10,9 @@ import ICDetailsTable from "./data-tables/ic-details-table";
 import RawJsonViewer from "./data-tables/raw-json-viewer";
 import ExportButtons from "./export-buttons";
 import StickyScore from "./sticky-score";
+import PdfViewer from "./pdf-viewer";
 import { formatDate } from "@/lib/utils";
-import { FileUp, AlertTriangle } from "lucide-react";
+import { FileUp, AlertTriangle, PanelLeftClose, PanelLeft, GripVertical } from "lucide-react";
 
 interface ResultsDashboardProps {
   result: ExtractionResult;
@@ -28,7 +29,11 @@ export default function ResultsDashboard({
 }: ResultsDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabType>("balance-sheet");
   const [showPdfViewer, setShowPdfViewer] = useState(false);
+  const [isPdfFullScreen, setIsPdfFullScreen] = useState(false);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [pdfPanelWidth, setPdfPanelWidth] = useState(50);
+  const [isResizing, setIsResizing] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const { metadata, tp_analysis } = result;
   const isLowConfidence = metadata.extraction_confidence === "low";
@@ -75,12 +80,98 @@ export default function ResultsDashboard({
     [tabs]
   );
 
+  const togglePdfViewer = useCallback(() => {
+    setShowPdfViewer((prev) => !prev);
+    // If closing the panel, also exit full screen mode
+    if (showPdfViewer) {
+      setIsPdfFullScreen(false);
+    }
+  }, [showPdfViewer]);
+
+  const togglePdfFullScreen = useCallback(() => {
+    setIsPdfFullScreen((prev) => !prev);
+  }, []);
+
+  const closePdfViewer = useCallback(() => {
+    setShowPdfViewer(false);
+    setIsPdfFullScreen(false);
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing || !containerRef.current) return;
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+      const clampedWidth = Math.min(Math.max(newWidth, 20), 80);
+      setPdfPanelWidth(clampedWidth);
+    },
+    [isResizing]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "col-resize";
+      document.body.style.userSelect = "none";
+    }
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+    };
+  }, [isResizing, handleMouseMove, handleMouseUp]);
+
+  // Render full-screen PDF viewer overlay
+  if (isPdfFullScreen && pdfData && showPdfViewer) {
+    return (
+      <PdfViewer
+        pdfData={pdfData}
+        isFullScreen={true}
+        onToggleFullScreen={togglePdfFullScreen}
+        onClose={closePdfViewer}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950">
       {/* Sticky header */}
       <header className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            {/* PDF toggle button */}
+            {pdfData && (
+              <button
+                onClick={togglePdfViewer}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  showPdfViewer
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                }`}
+                aria-label={showPdfViewer ? "Hide PDF viewer" : "Show PDF viewer"}
+                title={showPdfViewer ? "Hide PDF viewer" : "Show PDF viewer"}
+              >
+                {showPdfViewer ? (
+                  <PanelLeftClose className="w-4 h-4" />
+                ) : (
+                  <PanelLeft className="w-4 h-4" />
+                )}
+                <span className="text-sm font-medium hidden sm:inline">
+                  {showPdfViewer ? "Hide PDF" : "View PDF"}
+                </span>
+              </button>
+            )}
             <div>
               <h1 className="text-xl font-semibold text-slate-100">
                 {metadata.company_name || "Unknown Company"}
@@ -146,93 +237,124 @@ export default function ResultsDashboard({
         </div>
       )}
 
-      {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Summary cards */}
-        <section className="mb-8 animate-fade-in">
-          <SummaryCards result={result} />
-        </section>
-
-        {/* TP Flags */}
-        <section className="mb-8 animate-fade-in" style={{ animationDelay: "100ms" }}>
-          <TPFlags flags={tp_analysis.priority_flags} />
-        </section>
-
-        {/* Data tables */}
-        <section className="animate-fade-in" style={{ animationDelay: "200ms" }}>
-          <div className="bg-slate-800 rounded-xl border border-slate-700">
-            {/* Tab navigation */}
-            <div className="flex border-b border-slate-700" role="tablist" aria-label="Data sections">
-              {tabs.map((tab, index) => (
-                <button
-                  key={tab.id}
-                  ref={(el) => { tabRefs.current[index] = el; }}
-                  onClick={() => setActiveTab(tab.id)}
-                  onKeyDown={(e) => handleTabKeyDown(e, index)}
-                  className={`px-6 py-3 text-sm font-medium transition-colors relative focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
-                    activeTab === tab.id
-                      ? "text-blue-400"
-                      : "text-slate-400 hover:text-slate-300"
-                  }`}
-                  role="tab"
-                  aria-selected={activeTab === tab.id}
-                  aria-controls={`tabpanel-${tab.id}`}
-                  tabIndex={activeTab === tab.id ? 0 : -1}
-                  id={`tab-${tab.id}`}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400" />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* Tab content */}
+      {/* Main content with optional PDF split */}
+      <div ref={containerRef} className="flex relative">
+        {/* PDF Viewer Panel */}
+        {showPdfViewer && pdfData && (
+          <>
+            <aside className="h-[calc(100vh-73px)] sticky top-[73px] p-4 flex-shrink-0" style={{ width: `${pdfPanelWidth}%` }}>
+              <PdfViewer
+                pdfData={pdfData}
+                isFullScreen={false}
+                onToggleFullScreen={togglePdfFullScreen}
+                onClose={closePdfViewer}
+              />
+            </aside>
             <div
-              className="p-6"
-              role="tabpanel"
-              id={`tabpanel-${activeTab}`}
-              aria-labelledby={`tab-${activeTab}`}
+              className="w-2 h-[calc(100vh-73px)] sticky top-[73px] flex-shrink-0 cursor-col-resize group flex items-center justify-center bg-slate-900 hover:bg-slate-700 transition-colors"
+              onMouseDown={handleMouseDown}
+              title="Drag to resize panels"
+              role="separator"
+              aria-label="Resize panels"
             >
-              {activeTab === "balance-sheet" && (
-                <BalanceSheetTable balanceSheet={result.balance_sheet} />
+              <div className={`flex flex-col gap-0.5 ${isResizing ? 'opacity-100' : 'opacity-50 group-hover:opacity-100'} transition-opacity`}>
+                <GripVertical className="w-4 h-4 text-slate-400" />
+              </div>
+              {isResizing && (
+                <div className="absolute inset-y-0 w-0.5 bg-blue-500" />
               )}
-              {activeTab === "pnl" && (
-                <PnlTable profitAndLoss={result.profit_and_loss} />
-              )}
-              {activeTab === "ic-details" && (
-                <ICDetailsTable
-                  notes={result.notes_extraction}
-                  icFinancing={result.tp_analysis.ic_financing}
-                />
-              )}
-              {activeTab === "raw-json" && <RawJsonViewer data={result} />}
             </div>
-          </div>
-        </section>
+          </>
+        )}
 
-        {/* Extraction notes */}
-        {metadata.extraction_notes.length > 0 && (
-          <section className="mt-8 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-            <h3 className="text-sm font-medium text-slate-300 mb-2">
-              Extraction Notes
-            </h3>
-            <ul className="text-sm text-slate-400 space-y-1">
-              {metadata.extraction_notes.map((note, index) => (
-                <li key={index}>• {note}</li>
-              ))}
-            </ul>
+        {/* Main content */}
+        <main className={`${showPdfViewer ? "flex-1 min-w-0" : "max-w-7xl mx-auto w-full"} px-4 py-6`} style={showPdfViewer ? { width: `${100 - pdfPanelWidth}%` } : undefined}>
+          {/* Summary cards */}
+          <section className="mb-8 animate-fade-in">
+            <SummaryCards result={result} />
           </section>
-        )}
 
-        {/* Cost display */}
-        {result.extraction_cost_usd && (
-          <div className="mt-4 text-center text-sm text-slate-500">
-            Extraction cost: ${result.extraction_cost_usd.toFixed(3)}
-          </div>
-        )}
-      </main>
+          {/* TP Flags */}
+          <section className="mb-8 animate-fade-in" style={{ animationDelay: "100ms" }}>
+            <TPFlags flags={tp_analysis.priority_flags} />
+          </section>
+
+          {/* Data tables */}
+          <section className="animate-fade-in" style={{ animationDelay: "200ms" }}>
+            <div className="bg-slate-800 rounded-xl border border-slate-700">
+              {/* Tab navigation */}
+              <div className="flex border-b border-slate-700" role="tablist" aria-label="Data sections">
+                {tabs.map((tab, index) => (
+                  <button
+                    key={tab.id}
+                    ref={(el) => { tabRefs.current[index] = el; }}
+                    onClick={() => setActiveTab(tab.id)}
+                    onKeyDown={(e) => handleTabKeyDown(e, index)}
+                    className={`px-6 py-3 text-sm font-medium transition-colors relative focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset ${
+                      activeTab === tab.id
+                        ? "text-blue-400"
+                        : "text-slate-400 hover:text-slate-300"
+                    }`}
+                    role="tab"
+                    aria-selected={activeTab === tab.id}
+                    aria-controls={`tabpanel-${tab.id}`}
+                    tabIndex={activeTab === tab.id ? 0 : -1}
+                    id={`tab-${tab.id}`}
+                  >
+                    {tab.label}
+                    {activeTab === tab.id && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab content */}
+              <div
+                className="p-6"
+                role="tabpanel"
+                id={`tabpanel-${activeTab}`}
+                aria-labelledby={`tab-${activeTab}`}
+              >
+                {activeTab === "balance-sheet" && (
+                  <BalanceSheetTable balanceSheet={result.balance_sheet} />
+                )}
+                {activeTab === "pnl" && (
+                  <PnlTable profitAndLoss={result.profit_and_loss} />
+                )}
+                {activeTab === "ic-details" && (
+                  <ICDetailsTable
+                    notes={result.notes_extraction}
+                    icFinancing={result.tp_analysis.ic_financing}
+                  />
+                )}
+                {activeTab === "raw-json" && <RawJsonViewer data={result} />}
+              </div>
+            </div>
+          </section>
+
+          {/* Extraction notes */}
+          {metadata.extraction_notes.length > 0 && (
+            <section className="mt-8 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+              <h3 className="text-sm font-medium text-slate-300 mb-2">
+                Extraction Notes
+              </h3>
+              <ul className="text-sm text-slate-400 space-y-1">
+                {metadata.extraction_notes.map((note, index) => (
+                  <li key={index}>• {note}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* Cost display */}
+          {result.extraction_cost_usd && (
+            <div className="mt-4 text-center text-sm text-slate-500">
+              Extraction cost: ${result.extraction_cost_usd.toFixed(3)}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
