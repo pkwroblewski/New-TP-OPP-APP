@@ -77,7 +77,7 @@ export const LoanDetailSchema = z.object({
 
 export const CashPoolingDetailSchema = z.object({
   exists: z.boolean().default(false),
-  counterparty: z.string().optional(),
+  counterparty: z.string().nullable().optional(),
   receivable_balance: z.number().nullable().default(null),
   payable_balance: z.number().nullable().default(null),
 });

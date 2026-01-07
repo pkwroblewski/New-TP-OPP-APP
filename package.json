@@ -1,0 +1,13 @@
+{
+  "name": "new-tp-opp",
+  "version": "1.0.0",
+  "description": "TP Extractor - Luxembourg Transfer Pricing Analysis Tool",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix tp-extractor",
+    "build": "npm run build --prefix tp-extractor",
+    "start": "npm run start --prefix tp-extractor",
+    "lint": "npm run lint --prefix tp-extractor",
+    "install:app": "npm install --prefix tp-extractor"
+  }
+}
