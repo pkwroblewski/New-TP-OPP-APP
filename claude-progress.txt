@@ -1,5 +1,5 @@
 # TP Extractor - Claude Progress Report
-# Session 19: Regression Testing
+# Session 20: Regression Testing
 # Date: 2026-01-07
 
 ## Summary
@@ -13,29 +13,29 @@ All 107 features are passing (100% completion).
 - Completion: 100%
 
 ## Server Status
-- Server running on port 3007
+- Server running on port 3008
 - Application fully functional in demo mode
 
 ## Regression Tests Performed
 
-### Feature 10: Summary Cards - Company Info - PASS
+### Feature 19: Balance Sheet Table - Structure - PASS
 - Navigated to results dashboard after PDF upload
-- Company name "Luxembourg Holdings S.à r.l." displayed correctly
-- Entity type "Holding" shown with employee count indicator "2 FTE"
-- All 4 summary cards working (Entity Type, Total Assets, IC Exposure, D/E Ratio)
+- Verified Assets section visible with subsections (Fixed Assets, Current Assets, Prepayments)
+- Verified Liabilities section visible (Capital & Reserves, Provisions, Creditors)
+- Current Year and Previous Year columns present
+- YoY change calculation column exists and displays correctly
 
-### Feature 99: Spread Analysis Display - PASS
-- IC Financing flag shows spread analysis details
-- Implied lending rate: 5.0%
-- Implied borrowing rate: 2.0%
-- Spread: 300 bps displayed with HIGH priority flag
-- Source citations (Notes 4, 7, 9, 10) and caveats shown when expanded
+### Feature 39: JSON Export - PASS
+- Clicked JSON download button
+- File downloaded successfully: Luxembourg_Holdings_S.à_r.l._2023-12-31.json
+- Verified JSON is valid and well-formatted
+- Contains all extraction data (metadata, balance_sheet, profit_and_loss, notes_extraction, tp_analysis)
 
-### Feature 57: Partial Extraction Handling - PASS
-- Demo mode shows sample data clearly marked as "DEMO MODE"
-- Extraction Notes section informs user this is illustrative data
-- All data sections display properly without broken UI
-- User clearly informed about demo/partial result status
+### Feature 44: Export Buttons Always Accessible - PASS
+- Scrolled to various positions in results
+- Export buttons (Copy Summary, JSON, Excel) remain in sticky header
+- Clicked Copy Summary from scrolled position - works correctly
+- Toast notification "Summary copied to clipboard" displayed
 
 ## Additional Verifications
 - Upload Screen: Dark mode aesthetic, centered drag-drop zone
@@ -47,26 +47,23 @@ All 107 features are passing (100% completion).
 - TP Flags: 5 flags displayed (2 High, 2 Medium, 1 Low) with correct color coding
 - All Tabs Working:
   - Balance Sheet: Full data with IC items highlighted in blue
-  - P&L: Income/Expenses sections with IC items marked
-  - IC Details: Financing summary, shares, loans, cash pooling, RPT
-  - Raw JSON: Complete extraction data with syntax highlighting and Copy button
+  - P&L: Available via tab navigation
+  - IC Details: Available via tab navigation
+  - Raw JSON: Available via tab navigation
 - Score A: Displayed with correct red/high priority styling
-- Export buttons: Copy Summary, JSON, Excel all visible
-- New Extraction button: Returns to upload state correctly
-- Tab navigation: Balance Sheet, P&L, IC Details, Raw JSON all accessible
+- Export buttons: Copy Summary, JSON, Excel all visible and functional
+- New Extraction button: Available in header
+- Sticky header: Remains visible when scrolling
 
 ## Console Status
 - Only error: Missing favicon.ico (cosmetic 404)
 - Zero JavaScript runtime errors
 
 ## Screenshots Captured
-- regression-upload-page.png - Upload screen with dark mode
+- regression-upload-screen.png - Upload screen with dark mode
 - regression-results-dashboard.png - Full results dashboard with summary cards
-- regression-spread-analysis.png - Spread analysis in TP Flags section
-- regression-pnl-tab.png - P&L tab with IC items highlighted
-- regression-ic-details.png - IC Details tab with financing summary
-- regression-raw-json.png - Raw JSON viewer with syntax highlighting
-- regression-new-extraction.png - Upload screen after clicking New Extraction
+- regression-balance-sheet.png - Balance sheet table with full structure
+- regression-export-buttons-scrolled.png - Export buttons accessible when scrolled
 
 ## Conclusion
 All regression tests passed. Application remains production-ready with:
@@ -76,7 +73,8 @@ All regression tests passed. Application remains production-ready with:
 - Proper accent color usage per design system
 - Professional UI suitable for Big Four use
 - All data tables functioning correctly
-- Keyboard navigation working
+- Export functionality working (JSON download, Copy Summary)
+- Sticky header with accessible export buttons
 
 ## Next Steps
 - All features complete - application is ready for production use
