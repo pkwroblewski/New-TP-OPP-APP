@@ -1,5 +1,5 @@
 # TP Extractor - Claude Progress Report
-# Session 20: Regression Testing
+# Session 21: Regression Testing
 # Date: 2026-01-07
 
 ## Summary
@@ -13,31 +13,29 @@ All 107 features are passing (100% completion).
 - Completion: 100%
 
 ## Server Status
-- Server running on port 3008
+- Server running on port 3000
 - Application fully functional in demo mode
 
 ## Regression Tests Performed
 
-### Feature 19: Balance Sheet Table - Structure - PASS
-- Navigated to results dashboard after PDF upload
-- Verified Assets section visible with subsections (Fixed Assets, Current Assets, Prepayments)
-- Verified Liabilities section visible (Capital & Reserves, Provisions, Creditors)
-- Current Year and Previous Year columns present
-- YoY change calculation column exists and displays correctly
+### Feature 3: PDF Upload - File Type Validation - PASS
+- Navigated to home page
+- Attempted to upload a non-PDF file (invalid.txt)
+- Error message "Please upload a PDF file" appeared with red/danger styling
+- File was rejected and not processed
+- Error message is user-friendly (not technical jargon)
 
-### Feature 39: JSON Export - PASS
-- Clicked JSON download button
-- File downloaded successfully: Luxembourg_Holdings_S.à_r.l._2023-12-31.json
-- Verified JSON is valid and well-formatted
-- Contains all extraction data (metadata, balance_sheet, profit_and_loss, notes_extraction, tp_analysis)
+### Feature 20: Balance Sheet Table - IC Highlighting - PASS
+- Completed extraction with demo PDF (test-valid.pdf)
+- Navigated to Balance Sheet tab
+- Located intercompany items with blue "IC" badges:
+  - Shares in affiliated undertakings (Note 3)
+  - Loans to affiliated undertakings (Note 4)
+  - Amounts owed by affiliated undertakings (Note 5)
+  - Amounts owed to affiliated undertakings (Note 7)
+- IC items are visually distinct from regular items
 
-### Feature 44: Export Buttons Always Accessible - PASS
-- Scrolled to various positions in results
-- Export buttons (Copy Summary, JSON, Excel) remain in sticky header
-- Clicked Copy Summary from scrolled position - works correctly
-- Toast notification "Summary copied to clipboard" displayed
-
-## Additional Verifications
+### Additional Verifications
 - Upload Screen: Dark mode aesthetic, centered drag-drop zone
 - Results Dashboard: All summary cards displaying correctly
   - Entity Type: Holding (2 FTE)
@@ -45,13 +43,13 @@ All 107 features are passing (100% completion).
   - Total IC Exposure: EUR 102,000,000
   - Debt-to-Equity: 1.42x (58.6% debt)
 - TP Flags: 5 flags displayed (2 High, 2 Medium, 1 Low) with correct color coding
-- All Tabs Working:
-  - Balance Sheet: Full data with IC items highlighted in blue
-  - P&L: Available via tab navigation
-  - IC Details: Available via tab navigation
-  - Raw JSON: Available via tab navigation
 - Score A: Displayed with correct red/high priority styling
-- Export buttons: Copy Summary, JSON, Excel all visible and functional
+- JSON Export: Downloaded successfully with complete data structure
+  - Metadata, entity classification, balance sheet, P&L
+  - Notes extraction, TP analysis with flags
+- Toast notification "JSON file downloaded" appeared
+- All tabs working (Balance Sheet, P&L, IC Details, Raw JSON)
+- Export buttons: Copy Summary, JSON, Excel all visible
 - New Extraction button: Available in header
 - Sticky header: Remains visible when scrolling
 
@@ -61,9 +59,10 @@ All 107 features are passing (100% completion).
 
 ## Screenshots Captured
 - regression-upload-screen.png - Upload screen with dark mode
-- regression-results-dashboard.png - Full results dashboard with summary cards
-- regression-balance-sheet.png - Balance sheet table with full structure
-- regression-export-buttons-scrolled.png - Export buttons accessible when scrolled
+- regression-file-type-validation.png - Error for non-PDF upload
+- regression-results-dashboard.png - Full results dashboard
+- regression-balance-sheet-ic-highlighted.png - Balance sheet with IC badges
+- regression-json-download-success.png - After JSON download
 
 ## Conclusion
 All regression tests passed. Application remains production-ready with:
@@ -73,8 +72,9 @@ All regression tests passed. Application remains production-ready with:
 - Proper accent color usage per design system
 - Professional UI suitable for Big Four use
 - All data tables functioning correctly
-- Export functionality working (JSON download, Copy Summary)
-- Sticky header with accessible export buttons
+- Export functionality working (JSON download verified)
+- File type validation working correctly
+- IC items properly highlighted in Balance Sheet
 
 ## Next Steps
 - All features complete - application is ready for production use
