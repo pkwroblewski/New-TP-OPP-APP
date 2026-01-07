@@ -1,9 +1,10 @@
 # TP Extractor - Claude Progress Report
-# Session 13: Regression Testing
+# Session 14: Regression Testing
 # Date: 2026-01-07
 
 ## Summary
-This session performed regression testing to verify the application remains stable.
+This session performed comprehensive regression testing to verify the application remains stable.
+All 107 features are passing (100% completion).
 
 ## Current Status
 - Total Features: 107
@@ -12,21 +13,41 @@ This session performed regression testing to verify the application remains stab
 - Completion: 100%
 
 ## Server Status
-- Server running on port 3004
+- Server running on port 3000
 - Application fully functional in demo mode
 
 ## Regression Tests Performed
 
-Feature 83: Error Messages Specificity - PASS
-Feature 47: TP Score Color Coding - PASS
-Feature 13: Summary Cards - TP Score Display - PASS
+### Feature 100: TP Score A Criteria - PASS
+- Score A displayed correctly with red/high priority styling
+- Score rationale explains IC > EUR 100M threshold met
+- 2 HIGH flags visible (qualifying for Score A)
+
+### Feature 31: Tab Navigation - Keyboard Support - PASS
+- Arrow keys move focus between tabs
+- Enter key selects the focused tab
+- Tab content updates correctly when selected
+
+### Feature 106: Complete End-to-End Extraction Workflow - PASS
+1. Upload zone displayed on home page
+2. PDF upload accepted and processing started
+3. Metadata populated (company name, RCS, year)
+4. Summary cards displayed with correct data
+5. TP Score A displayed with correct color (red)
+6. Balance Sheet tab with data
+7. P&L tab with data
+8. IC Details tab with counterparty info
+9. Raw JSON tab with complete data
+10. Copy Summary feature works with toast notification
+11. PDF viewer split-screen mode works
+12. New Extraction button returns to upload state
 
 ## Additional Verifications
 - Upload Screen: Dark mode, drag-drop zone working
 - PDF Viewer Toggle: Split-screen layout functional
-- IC Details Tab: All sections displaying correctly
-- Copy Summary: Toast notification working
-- TP Flags: Filter and sort functional
+- IC Details Tab: All sections displaying correctly (IC Financing Summary, Shares, Loans, Cash Pooling)
+- Copy Summary: Toast notification "Summary copied to clipboard" working
+- TP Flags: Color-coded (HIGH/MEDIUM/LOW), filter and sort functional
 
 ## Console Status
 - Only error: Missing favicon.ico (cosmetic)
@@ -35,10 +56,16 @@ Feature 13: Summary Cards - TP Score Display - PASS
 ## Screenshots Captured
 - regression-01-upload-screen.png
 - regression-02-results-dashboard.png
-- regression-03-error-message.png
-- regression-04-pdf-split-screen.png
-- regression-05-ic-details.png
+- regression-03-pnl-tab.png
+- regression-04-ic-details.png
+- regression-05-raw-json.png
 - regression-06-copy-toast.png
+- regression-07-pdf-viewer.png
+- regression-08-new-extraction.png
 
 ## Conclusion
-All regression tests passed. Application remains production-ready.
+All regression tests passed. Application remains production-ready with:
+- 100% feature completion (107/107)
+- Zero JavaScript runtime errors
+- Dark mode aesthetic consistent throughout
+- Professional UI suitable for Big Four use
