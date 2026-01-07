@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/toast";
+import { ConvexClientProvider } from "@/components/convex-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,7 +33,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased min-h-screen bg-slate-950`}
       >
-        <ToastProvider>{children}</ToastProvider>
+        <ConvexClientProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ConvexClientProvider>
       </body>
     </html>
   );

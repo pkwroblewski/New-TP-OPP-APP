@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(node --version:*)",
+      "Bash(cat:*)",
+      "Bash(npm run dev:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "Bash(powershell -Command \"\\(Get-Content .env.local | Select-String ''ANTHROPIC_API_KEY''\\).Line.Length\")",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_file_upload",
+      "mcp__plugin_playwright_playwright__browser_wait_for",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix Zod schema validation for cash pooling counterparty field\n\n- Changed counterparty from z.string\\(\\).optional\\(\\) to z.string\\(\\).nullable\\(\\).optional\\(\\)\n- This allows Claude API responses with null values for counterparty field\n- Added root package.json to enable npm run dev from root directory\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(dir:*)",
+      "Bash(sqlite3:*)",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\bitpk\\\\Desktop\\\\New-TP-Opp'' -Filter ''*.txt'' | Select-Object -ExpandProperty FullName\")",
+      "Bash(powershell:*)",
+      "Bash(findstr:*)",
+      "mcp__plugin_playwright_playwright__browser_network_requests",
+      "mcp__plugin_playwright_playwright__browser_evaluate",
+      "Bash(git commit:*)",
+      "WebFetch(domain:www.notion.so)",
+      "WebFetch(domain:docs.convex.dev)",
+      "Bash(taskkill:*)",
+      "mcp__plugin_playwright_playwright__browser_install",
+      "Bash(curl:*)",
+      "Bash(npx convex dev --once)",
+      "Bash(npx convex env set:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

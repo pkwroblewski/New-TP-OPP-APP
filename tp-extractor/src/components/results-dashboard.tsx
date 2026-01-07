@@ -12,7 +12,9 @@ import ExportButtons from "./export-buttons";
 import StickyScore from "./sticky-score";
 import PdfViewer from "./pdf-viewer";
 import { formatDate } from "@/lib/utils";
-import { FileUp, AlertTriangle, PanelLeftClose, PanelLeft, GripVertical } from "lucide-react";
+import { FileUp, AlertTriangle, PanelLeftClose, PanelLeft, GripVertical, History } from "lucide-react";
+import Link from "next/link";
+import { UserButton } from "@clerk/nextjs";
 
 interface ResultsDashboardProps {
   result: ExtractionResult;
@@ -210,6 +212,13 @@ export default function ResultsDashboard({
           <div className="flex items-center gap-3">
             <StickyScore score={tp_analysis.overall_tp_opportunity_score} />
             <ExportButtons result={result} />
+            <Link
+              href="/history"
+              className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg transition-colors"
+            >
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">History</span>
+            </Link>
             <button
               onClick={onNewExtraction}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
@@ -217,6 +226,7 @@ export default function ResultsDashboard({
               <FileUp className="w-4 h-4" />
               New Extraction
             </button>
+            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </header>
