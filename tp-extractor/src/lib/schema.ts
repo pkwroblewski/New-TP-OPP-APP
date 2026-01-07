@@ -99,7 +99,7 @@ export const EntityClassificationSchema = z.object({
     "financing",
     "ip_holding",
     "mixed",
-  ]),
+  ]).nullable().default("mixed"),
   activities_description: z.string().nullable(),
   substance_indicators: z.array(z.string()).default([]),
 });

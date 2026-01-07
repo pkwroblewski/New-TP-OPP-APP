@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: "TP Extractor - Luxembourg Transfer Pricing Analysis",
   description:
     "Extract financial data from Luxembourg annual accounts and identify transfer pricing opportunities",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({

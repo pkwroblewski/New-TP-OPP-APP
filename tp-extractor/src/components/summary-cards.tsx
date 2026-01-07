@@ -78,7 +78,7 @@ export default function SummaryCards({ result }: SummaryCardsProps) {
       {/* Company Info */}
       <Card
         title="Entity Type"
-        value={entity_classification.primary_type.charAt(0).toUpperCase() + entity_classification.primary_type.slice(1)}
+        value={entity_classification.primary_type ? entity_classification.primary_type.charAt(0).toUpperCase() + entity_classification.primary_type.slice(1) : "Unknown"}
         subtitle={notes_extraction.employees_fte ? `${notes_extraction.employees_fte} FTE` : undefined}
         icon={<Building2 className="w-5 h-5 text-blue-400" />}
         tooltip={entity_classification.activities_description || undefined}
