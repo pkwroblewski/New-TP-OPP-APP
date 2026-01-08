@@ -56,13 +56,22 @@ export async function extractFromPDF(
       ],
     });
   } catch (error) {
+    console.error("Claude API error:", error);
+
+    // Handle connection errors
+    if (error instanceof Anthropic.APIConnectionError) {
+      throw new Error(
+        "Unable to connect to the AI service. Please check your internet connection and try again."
+      );
+    }
+
     // Handle Claude API errors with user-friendly messages
     if (error instanceof Anthropic.APIError) {
       const errorMessage = error.message || "";
 
       // Check for invalid PDF error
       if (errorMessage.includes("PDF specified was not valid") ||
-          errorMessage.includes("pdf") && errorMessage.includes("invalid")) {
+          (errorMessage.includes("pdf") && errorMessage.includes("invalid"))) {
         throw new Error(
           "The PDF file could not be processed. Please ensure it is a valid, non-corrupted PDF document with readable content."
         );
@@ -82,14 +91,32 @@ export async function extractFromPDF(
         );
       }
 
+      // Check for overloaded API
+      if (error.status === 529 || errorMessage.includes("overloaded")) {
+        throw new Error(
+          "The AI service is currently overloaded. Please try again in a few moments."
+        );
+      }
+
       // Generic API error
       throw new Error(
         `API error: ${errorMessage || "An error occurred while processing your request."}`
       );
     }
 
-    // Re-throw unknown errors
-    throw error;
+    // Handle generic errors with useful message
+    if (error instanceof Error) {
+      // Check for common error patterns
+      if (error.message.includes("fetch") || error.message.includes("network") || error.message.includes("ECONNREFUSED")) {
+        throw new Error(
+          "Network error: Unable to reach the AI service. Please try again."
+        );
+      }
+      throw new Error(`Extraction failed: ${error.message}`);
+    }
+
+    // Re-throw unknown errors with generic message
+    throw new Error("An unexpected error occurred during extraction. Please try again.");
   }
 
   // Extract text content from response
