@@ -81,11 +81,30 @@ Implement custom email allowlist to restrict registration to pre-approved users 
 
 ## Deployment
 
-- **Vercel**: https://tp-extractor-kv0knbv6i-pawels-projects-293cb507.vercel.app
+- **Vercel**: https://tp-extractor.vercel.app
 - **Convex**: https://dashboard.convex.dev/d/cautious-trout-725
+
+## Recent Changes (January 2026)
+
+### PDF Upload Error Handling (Fixed)
+- Added comprehensive error handling in `src/lib/claude.ts`
+- Lazy initialization of Anthropic client for serverless environments
+- User-friendly error messages for invalid PDFs, connection errors, rate limits
+
+### React Key Warning (Fixed)
+- Fixed in `src/components/data-tables/detailed-loans-table.tsx`
+- Changed fragment to `<Fragment key={index}>` in loans.map()
+
+### Known Issues
+- **Vercel Timeout**: Hobby plan has 10-second function limit; PDF extraction may timeout
+- If "Connection error" occurs on Vercel, verify ANTHROPIC_API_KEY env var
+
+### Session Notes
+See `.claude/session-notes.md` for detailed debugging history.
 
 ## Important Notes
 
 - API key stored in `.env.local` - never commit
 - File size limit: 50MB for PDF uploads
 - Cost: ~$0.20-0.30 per extraction using Claude Sonnet
+- Test PDFs must be valid, complete PDF documents (not just headers)
