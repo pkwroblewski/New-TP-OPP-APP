@@ -19,13 +19,14 @@ This file provides guidance to Claude Code when working on this project.
 ## Project Structure
 
 ```
-tp-extractor/           # Main Next.js application
+/                       # Root directory
   convex/              # Convex backend (schema, functions, auth)
   src/
     app/               # Next.js App Router pages and API routes
     components/        # React components (shadcn/ui based)
     lib/               # Utilities, Claude client, schemas
     types/             # TypeScript interfaces
+  public/              # Static assets
   convex.json          # Convex codegen config
   .env.local           # API keys (not committed)
 ```
@@ -33,12 +34,11 @@ tp-extractor/           # Main Next.js application
 ## Development Commands
 
 ```bash
-# From root directory
-npm run dev            # Start dev server (runs tp-extractor)
-
-# From tp-extractor directory
+# Start both servers (run in separate terminals)
 npm run dev            # Start Next.js dev server
-npx convex dev         # Start Convex dev server (run in separate terminal)
+npx convex dev         # Start Convex dev server
+
+# Build and lint
 npm run build          # Production build
 npm run lint           # ESLint
 
@@ -50,12 +50,12 @@ npx convex logs        # View logs
 
 ## Key Files
 
-- `tp-extractor/src/lib/schema.ts` - Zod validation schemas for extraction
-- `tp-extractor/src/lib/claude.ts` - Claude API client
-- `tp-extractor/src/lib/prompts.ts` - Extraction prompts
-- `tp-extractor/src/app/api/extract/route.ts` - Main extraction endpoint
-- `tp-extractor/convex/schema.ts` - Convex database schema
-- `tp-extractor/convex/extractions.ts` - Convex query/mutation functions
+- `src/lib/schema.ts` - Zod validation schemas for extraction
+- `src/lib/claude.ts` - Claude API client
+- `src/lib/prompts.ts` - Extraction prompts
+- `src/app/api/extract/route.ts` - Main extraction endpoint
+- `convex/schema.ts` - Convex database schema
+- `convex/extractions.ts` - Convex query/mutation functions
 
 ## Rules and Guidelines
 
@@ -65,11 +65,24 @@ Additional coding rules are in `.claude/rules/`:
 - [convex-ai-docs.md](.claude/rules/convex-ai-docs.md) - AI code generation best practices with Convex
 
 For Convex implementation details, see:
-- [tp-extractor/docs/convex-implementation-plan.md](tp-extractor/docs/convex-implementation-plan.md)
+- [docs/convex-implementation-plan.md](docs/convex-implementation-plan.md)
 
 ## Testing
 
 Features are tracked in `features.db` SQLite database using MCP tools.
+
+## Pending Tasks
+
+### User Allowlist (Authentication Restriction)
+Implement custom email allowlist to restrict registration to pre-approved users only.
+- Plan file: `.claude/plans/bubbly-crunching-crescent.md`
+- Status: Planned, not implemented
+- Files to modify: `convex/schema.ts`, `convex/auth.ts` (new), `src/components/auth-guard.tsx` (new), `src/components/convex-provider.tsx`
+
+## Deployment
+
+- **Vercel**: https://tp-extractor-kv0knbv6i-pawels-projects-293cb507.vercel.app
+- **Convex**: https://dashboard.convex.dev/d/cautious-trout-725
 
 ## Important Notes
 

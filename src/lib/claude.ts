@@ -28,6 +28,7 @@ export async function extractFromPDF(
   // Remove data URL prefix if present
   const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, "");
 
+  // Note: Using type assertion because SDK types don't include "document" type yet
   const response = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
     max_tokens: 8192,
@@ -43,7 +44,7 @@ export async function extractFromPDF(
               media_type: "application/pdf",
               data: base64Data,
             },
-          },
+          } as unknown as Anthropic.ImageBlockParam,
           {
             type: "text",
             text: USER_PROMPT,

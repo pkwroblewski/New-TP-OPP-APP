@@ -50,3 +50,6 @@ features.db
 
 # OS files
 Thumbs.db
+
+.vercel
+.playwright-mcp/

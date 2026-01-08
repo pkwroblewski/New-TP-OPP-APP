@@ -89,7 +89,7 @@ export default function HistoryPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href="/"
+              href="/analyze"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
             >
               <FileUp className="w-4 h-4" />
@@ -112,7 +112,7 @@ export default function HistoryPage() {
               Upload a PDF to extract transfer pricing data
             </p>
             <Link
-              href="/"
+              href="/analyze"
               className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"
             >
               <FileUp className="w-5 h-5" />

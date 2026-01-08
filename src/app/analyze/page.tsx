@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 import Link from "next/link";
 import UploadZone from "@/components/upload-zone";
 import AuthHeader from "@/components/auth-header";
@@ -11,7 +11,7 @@ import StreamingResultsDashboard from "@/components/streaming-results-dashboard"
 import { useStreamingExtraction } from "@/hooks/useStreamingExtraction";
 import { useToast } from "@/components/ui/toast";
 
-export default function Home() {
+export default function AnalyzePage() {
   const [pdfData, setPdfData] = useState<string | null>(null);
   const [lastFile, setLastFile] = useState<File | null>(null);
   const { state, isExtracting, startExtraction, reset, getCompleteResult } =

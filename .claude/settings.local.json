@@ -34,7 +34,13 @@
       "Bash(npx convex dev --once)",
       "Bash(npx convex env set:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Skill(vercel:deploy)",
+      "Bash(vercel --version:*)",
+      "Bash(vercel whoami:*)",
+      "Bash(vercel:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout:*)"
     ]
   }
 }
