@@ -28,31 +28,69 @@ export async function extractFromPDF(
   // Remove data URL prefix if present
   const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, "");
 
-  // Note: Using type assertion because SDK types don't include "document" type yet
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 8192,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "document",
-            source: {
-              type: "base64",
-              media_type: "application/pdf",
-              data: base64Data,
+  let response;
+  try {
+    // Note: Using type assertion because SDK types don't include "document" type yet
+    response = await anthropic.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 8192,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "document",
+              source: {
+                type: "base64",
+                media_type: "application/pdf",
+                data: base64Data,
+              },
+            } as unknown as Anthropic.ImageBlockParam,
+            {
+              type: "text",
+              text: USER_PROMPT,
             },
-          } as unknown as Anthropic.ImageBlockParam,
-          {
-            type: "text",
-            text: USER_PROMPT,
-          },
-        ],
-      },
-    ],
-  });
+          ],
+        },
+      ],
+    });
+  } catch (error) {
+    // Handle Claude API errors with user-friendly messages
+    if (error instanceof Anthropic.APIError) {
+      const errorMessage = error.message || "";
+
+      // Check for invalid PDF error
+      if (errorMessage.includes("PDF specified was not valid") ||
+          errorMessage.includes("pdf") && errorMessage.includes("invalid")) {
+        throw new Error(
+          "The PDF file could not be processed. Please ensure it is a valid, non-corrupted PDF document with readable content."
+        );
+      }
+
+      // Check for rate limiting
+      if (error.status === 429) {
+        throw new Error(
+          "API rate limit exceeded. Please wait a moment and try again."
+        );
+      }
+
+      // Check for authentication errors
+      if (error.status === 401) {
+        throw new Error(
+          "API authentication failed. Please check the API key configuration."
+        );
+      }
+
+      // Generic API error
+      throw new Error(
+        `API error: ${errorMessage || "An error occurred while processing your request."}`
+      );
+    }
+
+    // Re-throw unknown errors
+    throw error;
+  }
 
   // Extract text content from response
   const textContent = response.content.find((c) => c.type === "text");

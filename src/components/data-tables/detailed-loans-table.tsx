@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { cn, formatEUR, formatPercentage, formatDate } from "@/lib/utils";
 import { DetailedLoan } from "@/types/extraction";
 import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
@@ -106,9 +106,8 @@ export function DetailedLoansTable({
           </thead>
           <tbody>
             {loans.map((loan, index) => (
-              <>
+              <Fragment key={index}>
                 <tr
-                  key={index}
                   className={cn(
                     "border-b border-slate-700/50 hover:bg-slate-700/30 cursor-pointer transition-colors",
                     expandedRows.has(index) && "bg-slate-700/20"
@@ -220,7 +219,7 @@ export function DetailedLoansTable({
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
           <tfoot>
