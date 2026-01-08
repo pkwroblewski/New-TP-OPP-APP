@@ -10,6 +10,10 @@ import ICDetailsTable from "./data-tables/ic-details-table";
 import RawJsonViewer from "./data-tables/raw-json-viewer";
 import ExportButtons from "./export-buttons";
 import StickyScore from "./sticky-score";
+import { CapitalizationGauge } from "./capitalization-gauge";
+import { SpreadAnalysisSection } from "./spread-analysis-section";
+import { BoardManagersCard } from "./board-managers-card";
+import { DetailedLoansTable } from "./data-tables/detailed-loans-table";
 import PdfViewer from "./pdf-viewer";
 import { formatDate } from "@/lib/utils";
 import { FileUp, AlertTriangle, PanelLeftClose, PanelLeft, GripVertical, History } from "lucide-react";
@@ -22,7 +26,7 @@ interface ResultsDashboardProps {
   onNewExtraction: () => void;
 }
 
-type TabType = "balance-sheet" | "pnl" | "ic-details" | "raw-json";
+type TabType = "balance-sheet" | "pnl" | "ic-details" | "analysis" | "raw-json";
 
 export default function ResultsDashboard({
   result,
@@ -44,6 +48,7 @@ export default function ResultsDashboard({
     { id: "balance-sheet", label: "Balance Sheet" },
     { id: "pnl", label: "P&L" },
     { id: "ic-details", label: "IC Details" },
+    { id: "analysis", label: "Analysis" },
     { id: "raw-json", label: "Raw JSON" },
   ];
 
@@ -333,10 +338,72 @@ export default function ResultsDashboard({
                   <PnlTable profitAndLoss={result.profit_and_loss} />
                 )}
                 {activeTab === "ic-details" && (
-                  <ICDetailsTable
-                    notes={result.notes_extraction}
-                    icFinancing={result.tp_analysis.ic_financing}
-                  />
+                  <div className="space-y-6">
+                    <ICDetailsTable
+                      notes={result.notes_extraction}
+                      icFinancing={result.tp_analysis.ic_financing}
+                    />
+                    {/* Detailed loan tables */}
+                    {result.notes_extraction.detailed_loans_granted && result.notes_extraction.detailed_loans_granted.length > 0 && (
+                      <DetailedLoansTable
+                        loans={result.notes_extraction.detailed_loans_granted}
+                        title="Detailed Loans Granted (Loan-by-Loan)"
+                        direction="granted"
+                      />
+                    )}
+                    {result.notes_extraction.detailed_loans_received && result.notes_extraction.detailed_loans_received.length > 0 && (
+                      <DetailedLoansTable
+                        loans={result.notes_extraction.detailed_loans_received}
+                        title="Detailed Loans Received (Loan-by-Loan)"
+                        direction="received"
+                      />
+                    )}
+                    {result.notes_extraction.shareholder_loans && result.notes_extraction.shareholder_loans.length > 0 && (
+                      <DetailedLoansTable
+                        loans={result.notes_extraction.shareholder_loans}
+                        title="Shareholder Loans"
+                        direction="received"
+                      />
+                    )}
+                  </div>
+                )}
+                {activeTab === "analysis" && (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Spread Analysis */}
+                      <SpreadAnalysisSection icFinancing={result.tp_analysis.ic_financing} />
+                      {/* Capitalization Gauge */}
+                      <CapitalizationGauge capitalization={result.tp_analysis.capitalization} />
+                    </div>
+                    {/* Board of Managers */}
+                    {result.entity_governance && (
+                      <BoardManagersCard governance={result.entity_governance} />
+                    )}
+                    {/* Focus Areas and Rationale */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                        <h3 className="text-sm font-medium text-slate-300 mb-3">
+                          Score Rationale
+                        </h3>
+                        <p className="text-sm text-slate-400">
+                          {result.tp_analysis.score_rationale}
+                        </p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                        <h3 className="text-sm font-medium text-slate-300 mb-3">
+                          Recommended Focus Areas
+                        </h3>
+                        <ul className="text-sm text-slate-400 space-y-2">
+                          {result.tp_analysis.recommended_focus_areas.map((area, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-blue-400">•</span>
+                              {area}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {activeTab === "raw-json" && <RawJsonViewer data={result} />}
               </div>

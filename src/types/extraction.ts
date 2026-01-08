@@ -73,6 +73,49 @@ export interface LoanDetail {
   note_reference?: string;
 }
 
+// New interfaces for enhanced extraction
+
+export interface BoardMember {
+  name: string;
+  role?: string;
+  address?: string;
+}
+
+export interface DetailedLoan {
+  counterparty_name: string;
+  jurisdiction?: string | null;
+  instrument_type: "interest_bearing" | "profit_participating" | "convertible" | "interest_free";
+  original_principal: number | null;
+  currency: string;
+  execution_date?: string | null;
+  maturity_date?: string | null;
+  interest_rate?: number | null;
+  rate_adjustments?: string | null;
+  current_principal: number | null;
+  capitalised_interest?: number | null;
+  accrued_interest?: number | null;
+  current_year_total: number | null;
+  previous_year_total?: number | null;
+  note_reference?: string;
+  account_caption?: string;
+  is_from_shareholder: boolean;
+}
+
+export interface AccountCaption {
+  code: string;
+  description: string;
+  current_year: number | null;
+  previous_year: number | null;
+  is_ic: boolean;
+}
+
+export interface EntityGovernance {
+  board_members: BoardMember[];
+  administrator?: string | null;
+  shareholder_name?: string | null;
+  shareholder_jurisdiction?: string | null;
+}
+
 export interface CashPoolingDetail {
   exists: boolean;
   counterparty?: string;
@@ -84,6 +127,11 @@ export interface NotesExtraction {
   shares_in_affiliated_details: ShareholdingDetail[];
   loans_to_affiliated_details: LoanDetail[];
   loans_from_affiliated_details: LoanDetail[];
+  // New enhanced loan details (loan-by-loan breakdown)
+  detailed_loans_granted?: DetailedLoan[];
+  detailed_loans_received?: DetailedLoan[];
+  shareholder_loans?: DetailedLoan[];
+  account_captions?: AccountCaption[];
   related_party_transactions: string[];
   cash_pooling: CashPoolingDetail;
   employees_fte: number | null;
@@ -141,6 +189,7 @@ export interface ExtractionResult {
   profit_and_loss: ProfitAndLoss;
   notes_extraction: NotesExtraction;
   entity_classification: EntityClassification;
+  entity_governance?: EntityGovernance;
   tp_analysis: TPAnalysis;
   extraction_cost_usd?: number;
 }

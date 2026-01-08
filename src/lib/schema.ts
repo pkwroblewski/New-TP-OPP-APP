@@ -75,6 +75,54 @@ export const LoanDetailSchema = z.object({
   note_reference: z.string().optional(),
 });
 
+// New schemas for enhanced extraction
+
+export const BoardMemberSchema = z.object({
+  name: z.string(),
+  role: z.string().optional(),
+  address: z.string().optional(),
+});
+
+export const DetailedLoanSchema = z.object({
+  counterparty_name: z.string(),
+  jurisdiction: z.string().optional().nullable(),
+  instrument_type: z.enum([
+    "interest_bearing",
+    "profit_participating",
+    "convertible",
+    "interest_free",
+  ]).default("interest_bearing"),
+  original_principal: z.number().nullable(),
+  currency: z.string().default("EUR"),
+  execution_date: z.string().optional().nullable(),
+  maturity_date: z.string().optional().nullable(),
+  interest_rate: z.number().optional().nullable(),
+  rate_adjustments: z.string().optional().nullable(), // e.g. "minus remuneration"
+  current_principal: z.number().nullable(),
+  capitalised_interest: z.number().optional().nullable(),
+  accrued_interest: z.number().optional().nullable(),
+  current_year_total: z.number().nullable(),
+  previous_year_total: z.number().optional().nullable(),
+  note_reference: z.string().optional(),
+  account_caption: z.string().optional(), // e.g. "1139", "1147"
+  is_from_shareholder: z.boolean().default(false),
+});
+
+export const AccountCaptionSchema = z.object({
+  code: z.string(), // e.g. "1139", "1147"
+  description: z.string(),
+  current_year: z.number().nullable(),
+  previous_year: z.number().nullable(),
+  is_ic: z.boolean().default(false),
+});
+
+export const EntityGovernanceSchema = z.object({
+  board_members: z.array(BoardMemberSchema).default([]),
+  administrator: z.string().optional().nullable(),
+  shareholder_name: z.string().optional().nullable(),
+  shareholder_jurisdiction: z.string().optional().nullable(),
+});
+
 export const CashPoolingDetailSchema = z.object({
   exists: z.boolean().default(false),
   counterparty: z.string().nullable().optional(),
@@ -86,6 +134,11 @@ export const NotesExtractionSchema = z.object({
   shares_in_affiliated_details: z.array(ShareholdingDetailSchema).default([]),
   loans_to_affiliated_details: z.array(LoanDetailSchema).default([]),
   loans_from_affiliated_details: z.array(LoanDetailSchema).default([]),
+  // New enhanced loan details (loan-by-loan breakdown)
+  detailed_loans_granted: z.array(DetailedLoanSchema).default([]),
+  detailed_loans_received: z.array(DetailedLoanSchema).default([]),
+  shareholder_loans: z.array(DetailedLoanSchema).default([]),
+  account_captions: z.array(AccountCaptionSchema).default([]),
   related_party_transactions: z.array(z.string()).default([]),
   cash_pooling: CashPoolingDetailSchema,
   employees_fte: z.number().nullable(),
@@ -149,6 +202,7 @@ export const ExtractionResultSchema = z.object({
   profit_and_loss: ProfitAndLossSchema,
   notes_extraction: NotesExtractionSchema,
   entity_classification: EntityClassificationSchema,
+  entity_governance: EntityGovernanceSchema.optional(),
   tp_analysis: TPAnalysisSchema,
   extraction_cost_usd: z.number().optional(),
 });

@@ -56,31 +56,37 @@ async function streamDemoData(
     metadata: result.metadata,
   });
 
-  // Step 2: Send entity classification (200ms delay)
+  // Step 2: Send governance (200ms delay) - NEW
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  sendSSEEvent(controller, encoder, "governance", {
+    entity_governance: result.entity_governance,
+  });
+
+  // Step 3: Send entity classification (200ms delay)
   await new Promise((resolve) => setTimeout(resolve, 200));
   sendSSEEvent(controller, encoder, "entity", {
     entity_classification: result.entity_classification,
   });
 
-  // Step 3: Send balance sheet (400ms delay)
+  // Step 4: Send balance sheet (400ms delay)
   await new Promise((resolve) => setTimeout(resolve, 400));
   sendSSEEvent(controller, encoder, "balance_sheet", {
     balance_sheet: result.balance_sheet,
   });
 
-  // Step 4: Send P&L (300ms delay)
+  // Step 5: Send P&L (300ms delay)
   await new Promise((resolve) => setTimeout(resolve, 300));
   sendSSEEvent(controller, encoder, "profit_and_loss", {
     profit_and_loss: result.profit_and_loss,
   });
 
-  // Step 5: Send notes extraction (300ms delay)
+  // Step 6: Send notes extraction (300ms delay)
   await new Promise((resolve) => setTimeout(resolve, 300));
   sendSSEEvent(controller, encoder, "notes", {
     notes_extraction: result.notes_extraction,
   });
 
-  // Step 6: Send TP analysis (400ms delay)
+  // Step 7: Send TP analysis (400ms delay)
   await new Promise((resolve) => setTimeout(resolve, 400));
   sendSSEEvent(controller, encoder, "tp_analysis", {
     tp_analysis: result.tp_analysis,
@@ -104,6 +110,12 @@ async function streamRealData(
     // Stream in chunks with minimal delay for smoother UX
     sendSSEEvent(controller, encoder, "metadata", {
       metadata: result.metadata,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Send governance if available
+    sendSSEEvent(controller, encoder, "governance", {
+      entity_governance: result.entity_governance,
     });
     await new Promise((resolve) => setTimeout(resolve, 50));
 

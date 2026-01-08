@@ -34,6 +34,18 @@ Return a JSON object with this exact structure:
     "extraction_confidence": "high" | "medium" | "low",
     "extraction_notes": ["any caveats about the extraction"]
   },
+  "entity_governance": {
+    "board_members": [
+      {
+        "name": "full name of manager/director",
+        "role": "Manager" | "Director" | "Chairman" | null,
+        "address": "address if provided"
+      }
+    ],
+    "administrator": "name of administrator/service provider if any (e.g., 'Aztec Financial Services')",
+    "shareholder_name": "name of shareholder entity from notes about loans received",
+    "shareholder_jurisdiction": "jurisdiction of shareholder (e.g., 'Luxembourg')"
+  },
   "balance_sheet": {
     "fixed_assets": {
       "items": [
@@ -95,6 +107,58 @@ Return a JSON object with this exact structure:
       }
     ],
     "loans_from_affiliated_details": [same structure],
+    "detailed_loans_granted": [
+      {
+        "counterparty_name": "full borrower name from notes",
+        "jurisdiction": "country code (e.g., 'LU', 'UK') or null",
+        "instrument_type": "interest_bearing" | "profit_participating" | "convertible" | "interest_free",
+        "original_principal": number in EUR or null,
+        "currency": "EUR",
+        "execution_date": "YYYY-MM-DD or null",
+        "maturity_date": "YYYY-MM-DD or null",
+        "interest_rate": percentage (e.g., 5.5 for 5.5%) or null,
+        "rate_adjustments": "any rate adjustments like 'minus remuneration 0.10%' or null",
+        "current_principal": principal at year end or null,
+        "capitalised_interest": accumulated capitalised interest or null,
+        "accrued_interest": accrued not yet capitalised or null,
+        "current_year_total": total current year balance or null,
+        "previous_year_total": total previous year balance or null,
+        "note_reference": "Note X",
+        "account_caption": "eCDF caption code (e.g., '1139', '1147')",
+        "is_from_shareholder": false
+      }
+    ],
+    "detailed_loans_received": [
+      {
+        "counterparty_name": "lender name (often shareholder/parent)",
+        "jurisdiction": "country code or null",
+        "instrument_type": "interest_bearing" | "profit_participating" | "convertible" | "interest_free",
+        "original_principal": number or null,
+        "currency": "EUR",
+        "execution_date": "YYYY-MM-DD or null",
+        "maturity_date": "YYYY-MM-DD or null",
+        "interest_rate": percentage or null,
+        "rate_adjustments": "any adjustments or null",
+        "current_principal": number or null,
+        "capitalised_interest": number or null,
+        "accrued_interest": number or null,
+        "current_year_total": number or null,
+        "previous_year_total": number or null,
+        "note_reference": "Note X",
+        "account_caption": "e.g., '1379-1383', '1397-1401'",
+        "is_from_shareholder": true if from direct shareholder
+      }
+    ],
+    "shareholder_loans": [same structure as detailed_loans_received but ONLY for loans from direct shareholders in Other creditors/1397-1401],
+    "account_captions": [
+      {
+        "code": "eCDF caption code (e.g., '1139')",
+        "description": "caption description (e.g., 'Loans to affiliated undertakings')",
+        "current_year": number or null,
+        "previous_year": number or null,
+        "is_ic": true if intercompany
+      }
+    ],
     "related_party_transactions": ["description of any RP transactions"],
     "cash_pooling": {
       "exists": boolean,
@@ -157,11 +221,30 @@ D/E RATIO THRESHOLDS (Luxembourg market practice):
 - D/E 5.67x-10x (85-90% debt): Medium priority flag
 - D/E > 10x (>90% debt): High priority flag
 
+ACCOUNT CAPTION MAPPING (Luxembourg eCDF format):
+- Caption 1139: "Loans to affiliated undertakings" - traditional IC loans granted
+- Caption 1147: "Other loans" - sometimes contains IC loans (check note details)
+- Caption 1379-1383: "Amounts owed to affiliated undertakings" - IC loans received
+- Caption 1397-1401: "Other creditors" - often contains shareholder loans (check note details)
+
+LOAN-BY-LOAN EXTRACTION:
+- For EACH IC loan in the notes, extract individual loan details
+- Parse European number format: "108.784.025,00" means 108,784,025.00
+- Look for principal/capitalised interest/accrued interest breakdown
+- Identify rate adjustments like "minus remuneration 0.10%"
+- Execution dates may be in DD/MM/YYYY or DD.MM.YYYY format
+
+BOARD OF MANAGERS EXTRACTION:
+- Extract names from "Board of Managers" or "Directors" section
+- Often found at end of document or in management report
+- Include administrator/service provider if mentioned (e.g., "Aztec Financial Services")
+
 IMPORTANT:
 - Extract EXACT figures from document
 - Use null for missing data, not zero
 - All monetary values in EUR
 - Include note/page references where available
 - Be conservative - if unsure, mark extraction_confidence as "low"
+- Parse European number format correctly (period = thousands, comma = decimal)
 
 Respond with ONLY the JSON object, no other text.`;

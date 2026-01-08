@@ -8,6 +8,7 @@ import {
   ProfitAndLoss,
   NotesExtraction,
   EntityClassification,
+  EntityGovernance,
   TPAnalysis,
 } from "@/types/extraction";
 
@@ -15,6 +16,7 @@ export type StreamingStage =
   | "idle"
   | "connecting"
   | "metadata"
+  | "governance"
   | "entity"
   | "balance_sheet"
   | "profit_and_loss"
@@ -26,6 +28,7 @@ export type StreamingStage =
 export interface StreamingState {
   stage: StreamingStage;
   metadata: Metadata | null;
+  entity_governance: EntityGovernance | null;
   entity_classification: EntityClassification | null;
   balance_sheet: BalanceSheet | null;
   profit_and_loss: ProfitAndLoss | null;
@@ -38,6 +41,7 @@ export interface StreamingState {
 const initialState: StreamingState = {
   stage: "idle",
   metadata: null,
+  entity_governance: null,
   entity_classification: null,
   balance_sheet: null,
   profit_and_loss: null,
@@ -142,6 +146,13 @@ export function useStreamingExtraction() {
             metadata: data.metadata as Metadata,
           };
 
+        case "governance":
+          return {
+            ...prev,
+            stage: "governance",
+            entity_governance: data.entity_governance as EntityGovernance,
+          };
+
         case "entity":
           return {
             ...prev,
@@ -204,6 +215,7 @@ export function useStreamingExtraction() {
       return {
         metadata: state.metadata,
         entity_classification: state.entity_classification,
+        entity_governance: state.entity_governance || undefined,
         balance_sheet: state.balance_sheet,
         profit_and_loss: state.profit_and_loss,
         notes_extraction: state.notes_extraction,
