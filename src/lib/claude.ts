@@ -3,14 +3,23 @@ import { SYSTEM_PROMPT, USER_PROMPT } from "./prompts";
 import { ExtractionResultSchema } from "./schema";
 import type { ExtractionResult } from "@/types/extraction";
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 // Pricing for Claude Sonnet (per 1M tokens)
 const SONNET_INPUT_PRICE = 3.0;
 const SONNET_OUTPUT_PRICE = 15.0;
+
+// Lazily initialize Anthropic client to ensure env vars are available
+let anthropicClient: Anthropic | null = null;
+
+function getAnthropicClient(): Anthropic {
+  if (!anthropicClient) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new Error("ANTHROPIC_API_KEY environment variable is not configured");
+    }
+    anthropicClient = new Anthropic({ apiKey });
+  }
+  return anthropicClient;
+}
 
 export interface ExtractionResponse {
   result: ExtractionResult;
@@ -30,6 +39,8 @@ export async function extractFromPDF(
 
   let response;
   try {
+    const anthropic = getAnthropicClient();
+
     // Note: Using type assertion because SDK types don't include "document" type yet
     response = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
