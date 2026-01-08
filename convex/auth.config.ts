@@ -1,9 +1,8 @@
 export default {
   providers: [
     {
-      // This is the domain of your Clerk app
-      // Set from environment variable
-      domain: process.env.CLERK_JWT_ISSUER_DOMAIN,
+      // Clerk JWT issuer domain (hardcoded for reliability)
+      domain: "https://optimum-quail-30.clerk.accounts.dev",
       applicationID: "convex",
     },
   ],
