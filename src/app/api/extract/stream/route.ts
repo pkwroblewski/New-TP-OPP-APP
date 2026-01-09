@@ -11,13 +11,35 @@ const isConvexConfigured = () => {
   return convexUrl && convexUrl.length > 0;
 };
 
-// Rate limiting - simple in-memory store
+// Rate limiting - simple in-memory store with cleanup
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
 const RATE_LIMIT = 10; // requests per window
 const RATE_WINDOW = 60 * 1000; // 1 minute
+const CLEANUP_INTERVAL = 5 * 60 * 1000; // Clean up every 5 minutes
+let lastCleanup = Date.now();
+
+/**
+ * Remove expired entries from the rate limit map to prevent memory leaks
+ */
+function cleanupExpiredEntries(): void {
+  const now = Date.now();
+  // Only run cleanup periodically to avoid overhead on every request
+  if (now - lastCleanup < CLEANUP_INTERVAL) return;
+
+  lastCleanup = now;
+  for (const [ip, record] of requestCounts.entries()) {
+    if (now > record.resetTime) {
+      requestCounts.delete(ip);
+    }
+  }
+}
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
+
+  // Periodically clean up expired entries
+  cleanupExpiredEntries();
+
   const record = requestCounts.get(ip);
 
   if (!record || now > record.resetTime) {

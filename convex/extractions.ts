@@ -49,14 +49,13 @@ export const listAll = query({
 
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
 
-    // Note: Without userId filter, we use default ordering with filter
-    // For better performance with large datasets, consider a separate index
+    // Query with default ordering (by _creationTime) and filter in memory
+    // This is efficient for small team usage; for large datasets consider pagination
     const allExtractions = await ctx.db
       .query("extractions")
       .order("desc")
       .collect();
 
-    // Filter in memory for 30-day window (acceptable for small team usage)
     return allExtractions.filter((e) => e._creationTime >= thirtyDaysAgo);
   },
 });
@@ -88,16 +87,27 @@ export const save = mutation({
   },
 });
 
-// Get single extraction by ID
+// Get single extraction by ID (with ownership check)
 export const get = query({
   args: { id: v.id("extractions") },
   returns: v.union(extractionValidator, v.null()),
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const extraction = await ctx.db.get(args.id);
+    if (!extraction) return null;
+
+    // Ownership check - users can only access their own extractions
+    if (extraction.userId !== identity.subject) {
+      return null;
+    }
+
+    return extraction;
   },
 });
 
-// Delete an extraction
+// Delete an extraction (owner only)
 export const remove = mutation({
   args: { id: v.id("extractions") },
   returns: v.null(),
@@ -110,7 +120,11 @@ export const remove = mutation({
       throw new Error("Extraction not found");
     }
 
-    // Team members can delete any extraction
+    // Ownership check - users can only delete their own extractions
+    if (extraction.userId !== identity.subject) {
+      throw new Error("Not authorized to delete this extraction");
+    }
+
     await ctx.db.delete(args.id);
     return null;
   },
