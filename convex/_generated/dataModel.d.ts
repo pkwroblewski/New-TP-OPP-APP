@@ -36,6 +36,7 @@ export type DataModel = {
       financialYearEnd?: string;
       financialYearStart?: string;
       flagsCount: number;
+      pdfStorageId?: Id<"_storage">;
       rcsNumber?: string;
       totalAssets?: number;
       totalIcExposure?: number;
@@ -54,6 +55,7 @@ export type DataModel = {
       | "financialYearEnd"
       | "financialYearStart"
       | "flagsCount"
+      | "pdfStorageId"
       | "rcsNumber"
       | "totalAssets"
       | "totalIcExposure"

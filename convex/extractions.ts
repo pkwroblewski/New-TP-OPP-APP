@@ -17,6 +17,7 @@ const extractionValidator = v.object({
   flagsCount: v.number(),
   extractionData: v.any(),
   extractionCostUsd: v.optional(v.number()),
+  pdfStorageId: v.optional(v.id("_storage")),
 });
 
 // List user's extractions (last 30 days)
@@ -60,6 +61,18 @@ export const listAll = query({
   },
 });
 
+// Generate upload URL for PDF storage
+export const generateUploadUrl = mutation({
+  args: {},
+  returns: v.string(),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
 // Save a new extraction
 export const save = mutation({
   args: {
@@ -74,6 +87,7 @@ export const save = mutation({
     flagsCount: v.number(),
     extractionData: v.any(),
     extractionCostUsd: v.optional(v.number()),
+    pdfStorageId: v.optional(v.id("_storage")),
   },
   returns: v.id("extractions"),
   handler: async (ctx, args) => {
@@ -125,7 +139,36 @@ export const remove = mutation({
       throw new Error("Not authorized to delete this extraction");
     }
 
+    // Delete the PDF from storage if it exists
+    if (extraction.pdfStorageId) {
+      await ctx.storage.delete(extraction.pdfStorageId);
+    }
+
     await ctx.db.delete(args.id);
     return null;
+  },
+});
+
+// Get PDF URL for an extraction
+export const getPdfUrl = query({
+  args: { id: v.id("extractions") },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const extraction = await ctx.db.get(args.id);
+    if (!extraction) return null;
+
+    // Ownership check
+    if (extraction.userId !== identity.subject) {
+      return null;
+    }
+
+    if (!extraction.pdfStorageId) {
+      return null;
+    }
+
+    return await ctx.storage.getUrl(extraction.pdfStorageId);
   },
 });

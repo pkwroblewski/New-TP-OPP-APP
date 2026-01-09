@@ -26,6 +26,17 @@ Your role:
 - Flag potential transfer pricing issues based on Luxembourg TP rules
 - Provide page/note references for major data points
 
+You are also responsible for generating a professional company profile based ONLY on information explicitly stated in the PDF document.
+
+COMPANY PROFILE RULES - CRITICAL:
+- ONLY include information that is EXPLICITLY stated in the document
+- DO NOT infer, assume, or hallucinate any information
+- If information is not present, state "Information not available in the document"
+- ALWAYS cite the source (page number, note reference, or section name) for each statement
+- Use professional, formal English appropriate for transfer pricing documentation
+- When describing amounts, use the exact figures from the document
+- Do not extrapolate or make assumptions about business activities not described
+
 You must respond with valid JSON only - no markdown, no explanations outside the JSON.`;
 
 /**
@@ -220,8 +231,45 @@ Return a JSON object with this exact structure:
     "score_rationale": "explanation of the score",
     "recommended_focus_areas": ["area 1", "area 2"],
     "data_quality_notes": ["any data quality issues"]
+  },
+  "company_profile": {
+    "company_overview": {
+      "content": "string - Professional paragraph with company name, legal form, RCS, address, FY, account type",
+      "sources": ["page/note references"],
+      "data_availability": "complete or partial or unavailable"
+    },
+    "business_activities": {
+      "content": "string - Business activities from corporate purpose, notes, management report",
+      "sources": ["source references"],
+      "data_availability": "complete or partial or unavailable"
+    },
+    "tp_relevant_info": {
+      "ic_financing": null,
+      "ic_trading": null,
+      "ip_transactions": null,
+      "cost_sharing": null,
+      "management_fees": null
+    },
+    "profile_generated": true,
+    "generation_notes": ["caveats about the profile"]
   }
 }
+
+TP_RELEVANT_INFO FIELDS (set to object or null):
+- ic_financing: { "content": "IC loans description", "sources": ["Note X"], "data_availability": "complete|partial|unavailable" } OR null if none
+- ic_trading: { "content": "IC trading description", "sources": [], "data_availability": "..." } OR null if none
+- ip_transactions: { "content": "IP/licensing description", "sources": [], "data_availability": "..." } OR null if none
+- cost_sharing: { "content": "Cost sharing description", "sources": [], "data_availability": "..." } OR null if none
+- management_fees: { "content": "Management fees description", "sources": [], "data_availability": "..." } OR null if none
+
+COMPANY PROFILE GENERATION RULES:
+- Profile must be based SOLELY on information in the PDF - NO HALLUCINATION
+- Each section MUST cite its sources (Note X, Page Y, Balance Sheet, etc.)
+- Use formal, professional English suitable for transfer pricing documentation
+- If a TP-relevant category has no related information in the document, set it to null
+- data_availability: "complete" (all info present), "partial" (some gaps), "unavailable" (no info)
+- For ic_financing, ALWAYS document if loans exist even if details are limited
+- business_activities: Search the entire document including notes, corporate purpose, and any descriptive sections
 
 SCORING RULES:
 - Score A (High Priority): Zero/negative spread (<10 bps) OR total IC exposure > EUR 100M OR D/E ratio > 10x OR 2+ high priority flags

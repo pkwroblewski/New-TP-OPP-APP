@@ -36,6 +36,7 @@ export declare const api: {
     };
   };
   extractions: {
+    generateUploadUrl: FunctionReference<"mutation", "public", {}, string>;
     get: FunctionReference<
       "query",
       "public",
@@ -50,12 +51,19 @@ export declare const api: {
         financialYearEnd?: string;
         financialYearStart?: string;
         flagsCount: number;
+        pdfStorageId?: Id<"_storage">;
         rcsNumber?: string;
         totalAssets?: number;
         totalIcExposure?: number;
         tpScore: "A" | "B" | "C";
         userId: string;
       } | null
+    >;
+    getPdfUrl: FunctionReference<
+      "query",
+      "public",
+      { id: Id<"extractions"> },
+      string | null
     >;
     list: FunctionReference<
       "query",
@@ -71,6 +79,7 @@ export declare const api: {
         financialYearEnd?: string;
         financialYearStart?: string;
         flagsCount: number;
+        pdfStorageId?: Id<"_storage">;
         rcsNumber?: string;
         totalAssets?: number;
         totalIcExposure?: number;
@@ -92,6 +101,7 @@ export declare const api: {
         financialYearEnd?: string;
         financialYearStart?: string;
         flagsCount: number;
+        pdfStorageId?: Id<"_storage">;
         rcsNumber?: string;
         totalAssets?: number;
         totalIcExposure?: number;
@@ -116,6 +126,7 @@ export declare const api: {
         financialYearEnd?: string;
         financialYearStart?: string;
         flagsCount: number;
+        pdfStorageId?: Id<"_storage">;
         rcsNumber?: string;
         totalAssets?: number;
         totalIcExposure?: number;

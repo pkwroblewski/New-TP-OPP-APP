@@ -15,6 +15,7 @@ export default defineSchema({
     flagsCount: v.number(),
     extractionData: v.any(), // Full JSON extraction result
     extractionCostUsd: v.optional(v.number()),
+    pdfStorageId: v.optional(v.id("_storage")), // PDF file in Convex storage
   })
     .index("by_user", ["userId"]),
     // Note: _creationTime is automatically appended to all indexes,

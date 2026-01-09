@@ -25,14 +25,16 @@ export function calculateCost(inputTokens: number, outputTokens: number): number
 export function cleanJsonResponse(text: string): string {
   let cleaned = text.trim();
 
-  if (cleaned.startsWith("```json")) {
-    cleaned = cleaned.slice(7);
+  // Remove opening code fence with optional language tag
+  const openingMatch = cleaned.match(/^```(?:json)?\s*/);
+  if (openingMatch) {
+    cleaned = cleaned.slice(openingMatch[0].length);
   }
-  if (cleaned.startsWith("```")) {
-    cleaned = cleaned.slice(3);
-  }
-  if (cleaned.endsWith("```")) {
-    cleaned = cleaned.slice(0, -3);
+
+  // Remove closing code fence
+  const closingMatch = cleaned.match(/\s*```\s*$/);
+  if (closingMatch) {
+    cleaned = cleaned.slice(0, -closingMatch[0].length);
   }
 
   return cleaned.trim();

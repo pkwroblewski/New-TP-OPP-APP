@@ -12,11 +12,11 @@ import {
   Eye,
   Calendar,
   Building2,
-  TrendingUp,
   AlertTriangle,
   ChevronLeft,
   ChevronRight,
   Loader2,
+  Home,
 } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
 import { formatEUR, getTPScoreClasses } from "@/lib/utils";
@@ -88,6 +88,13 @@ export default function HistoryPage() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="flex items-center gap-2 px-3 py-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+            >
+              <Home className="w-4 h-4" />
+              Dashboard
+            </Link>
             <Link
               href="/analyze"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors"

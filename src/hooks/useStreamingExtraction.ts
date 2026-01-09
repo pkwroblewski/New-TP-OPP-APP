@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type {
@@ -12,6 +12,7 @@ import type {
   EntityClassification,
   EntityGovernance,
   TPAnalysis,
+  CompanyProfile,
 } from "@/types/extraction";
 import { ExtractionResultSchema } from "@/lib/schema";
 
@@ -37,6 +38,7 @@ export interface StreamingState {
   profit_and_loss: ProfitAndLoss | null;
   notes_extraction: NotesExtraction | null;
   tp_analysis: TPAnalysis | null;
+  company_profile: CompanyProfile | null;
   extraction_cost_usd: number | null;
   error: string | null;
 }
@@ -50,6 +52,7 @@ const initialState: StreamingState = {
   profit_and_loss: null,
   notes_extraction: null,
   tp_analysis: null,
+  company_profile: null,
   extraction_cost_usd: null,
   error: null,
 };
@@ -125,7 +128,28 @@ async function fileToBase64(file: File): Promise<string> {
 export function useStreamingExtraction() {
   const [state, setState] = useState<StreamingState>(initialState);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const extractPdf = useAction(api.actions.extractPdf.extractPdf);
+
+  // Track elapsed time during extraction
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
+    if (isExtracting) {
+      setElapsedSeconds(0);
+      interval = setInterval(() => {
+        setElapsedSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setElapsedSeconds(0);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isExtracting]);
 
   const reset = useCallback(function reset(): void {
     setState(initialState);
@@ -181,7 +205,10 @@ export function useStreamingExtraction() {
             ...prev,
             stage,
             [field]: result[field] ?? null,
-            ...(stage === "tp_analysis" && { extraction_cost_usd: response.cost_usd }),
+            ...(stage === "tp_analysis" && {
+              extraction_cost_usd: response.cost_usd,
+              company_profile: result.company_profile ?? null,
+            }),
           }));
         }
 
@@ -216,6 +243,7 @@ export function useStreamingExtraction() {
       profit_and_loss,
       notes_extraction,
       tp_analysis,
+      company_profile: state.company_profile ?? undefined,
       extraction_cost_usd: state.extraction_cost_usd ?? undefined,
     };
   }, [state]);
@@ -223,6 +251,7 @@ export function useStreamingExtraction() {
   return {
     state,
     isExtracting,
+    elapsedSeconds,
     startExtraction,
     reset,
     getCompleteResult,

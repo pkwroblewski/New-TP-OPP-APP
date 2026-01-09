@@ -183,6 +183,29 @@ export interface TPAnalysis {
   data_quality_notes: string[];
 }
 
+// Company Profile interfaces - AI-generated profile based on PDF content
+export interface CompanyProfileSection {
+  content: string;
+  sources: string[];
+  data_availability: "complete" | "partial" | "unavailable";
+}
+
+export interface CompanyProfileTPRelevantInfo {
+  ic_financing: CompanyProfileSection | null;
+  ic_trading: CompanyProfileSection | null;
+  ip_transactions: CompanyProfileSection | null;
+  cost_sharing: CompanyProfileSection | null;
+  management_fees: CompanyProfileSection | null;
+}
+
+export interface CompanyProfile {
+  company_overview: CompanyProfileSection;
+  business_activities: CompanyProfileSection;
+  tp_relevant_info: CompanyProfileTPRelevantInfo;
+  profile_generated: boolean;
+  generation_notes: string[];
+}
+
 export interface ExtractionResult {
   metadata: Metadata;
   balance_sheet: BalanceSheet;
@@ -191,5 +214,6 @@ export interface ExtractionResult {
   entity_classification: EntityClassification;
   entity_governance?: EntityGovernance;
   tp_analysis: TPAnalysis;
+  company_profile?: CompanyProfile;
   extraction_cost_usd?: number;
 }

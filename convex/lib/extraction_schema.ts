@@ -196,6 +196,29 @@ const TPAnalysisSchema = z.object({
   data_quality_notes: z.array(z.string()).default([]),
 });
 
+// Company Profile schemas - AI-generated profile based on PDF content
+const CompanyProfileSectionSchema = z.object({
+  content: z.string(),
+  sources: z.array(z.string()).default([]),
+  data_availability: z.enum(["complete", "partial", "unavailable"]).default("partial"),
+});
+
+const CompanyProfileTPRelevantInfoSchema = z.object({
+  ic_financing: CompanyProfileSectionSchema.nullable(),
+  ic_trading: CompanyProfileSectionSchema.nullable(),
+  ip_transactions: CompanyProfileSectionSchema.nullable(),
+  cost_sharing: CompanyProfileSectionSchema.nullable(),
+  management_fees: CompanyProfileSectionSchema.nullable(),
+});
+
+const CompanyProfileSchema = z.object({
+  company_overview: CompanyProfileSectionSchema,
+  business_activities: CompanyProfileSectionSchema,
+  tp_relevant_info: CompanyProfileTPRelevantInfoSchema,
+  profile_generated: z.boolean().default(true),
+  generation_notes: z.array(z.string()).default([]),
+});
+
 export const ExtractionResultSchema = z.object({
   metadata: MetadataSchema,
   balance_sheet: BalanceSheetSchema,
@@ -204,6 +227,7 @@ export const ExtractionResultSchema = z.object({
   entity_classification: EntityClassificationSchema,
   entity_governance: EntityGovernanceSchema.optional(),
   tp_analysis: TPAnalysisSchema,
+  company_profile: CompanyProfileSchema.optional(),
   extraction_cost_usd: z.number().optional(),
 });
 
