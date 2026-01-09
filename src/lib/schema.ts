@@ -19,7 +19,7 @@ export const BalanceSheetItemSchema = z.object({
   current_year: z.number().nullable(),
   previous_year: z.number().nullable(),
   is_ic: z.boolean().default(false),
-  note_reference: z.string().optional(),
+  note_reference: z.string().optional().nullable(),
 });
 
 export const BalanceSheetSectionSchema = z.object({
@@ -46,7 +46,7 @@ export const ProfitAndLossItemSchema = z.object({
   current_year: z.number().nullable(),
   previous_year: z.number().nullable(),
   is_ic: z.boolean().default(false),
-  note_reference: z.string().optional(),
+  note_reference: z.string().optional().nullable(),
 });
 
 export const ProfitAndLossSchema = z.object({
@@ -60,8 +60,8 @@ export const ProfitAndLossSchema = z.object({
 
 export const ShareholdingDetailSchema = z.object({
   counterparty: z.string(),
-  country: z.string().optional(),
-  percentage: z.number().optional(),
+  country: z.string().optional().nullable(),
+  percentage: z.number().optional().nullable(),
   carrying_value: z.number().nullable(),
   equity_value: z.number().optional().nullable(),
 });
@@ -72,15 +72,15 @@ export const LoanDetailSchema = z.object({
   amount: z.number().nullable(),
   interest_rate: z.number().optional().nullable(),
   maturity_date: z.string().optional().nullable(),
-  note_reference: z.string().optional(),
+  note_reference: z.string().optional().nullable(),
 });
 
 // New schemas for enhanced extraction
 
 export const BoardMemberSchema = z.object({
   name: z.string(),
-  role: z.string().optional(),
-  address: z.string().optional(),
+  role: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
 });
 
 export const DetailedLoanSchema = z.object({
@@ -103,8 +103,8 @@ export const DetailedLoanSchema = z.object({
   accrued_interest: z.number().optional().nullable(),
   current_year_total: z.number().nullable(),
   previous_year_total: z.number().optional().nullable(),
-  note_reference: z.string().optional(),
-  account_caption: z.string().optional(), // e.g. "1139", "1147"
+  note_reference: z.string().optional().nullable(),
+  account_caption: z.string().optional().nullable(), // e.g. "1139", "1147"
   is_from_shareholder: z.boolean().default(false),
 });
 
@@ -163,7 +163,7 @@ export const TPFlagSchema = z.object({
   description: z.string(),
   affected_amount: z.number().nullable(),
   source: z.string(),
-  caveats: z.string().optional(),
+  caveats: z.string().optional().nullable(),
 });
 
 export const ICFinancingSchema = z.object({

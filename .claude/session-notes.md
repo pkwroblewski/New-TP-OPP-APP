@@ -1,3 +1,62 @@
+# Session Notes - January 9, 2026
+
+## Current Status: FULLY WORKING - ALL ISSUES RESOLVED
+
+### Issue 1: Schema Validation Bug - FIXED
+**Error**: `Extraction validation failed: Expected string, received null`
+**Root Cause**: Multiple schema fields had `.optional()` which allows `undefined` but rejects `null`. Claude returns `null` for missing values.
+**Fix Applied**: Added `.nullable()` to all optional string fields across multiple schemas:
+- `BoardMemberSchema.address`, `role`
+- `BalanceSheetItemSchema.note_reference`
+- `ProfitAndLossItemSchema.note_reference`
+- `ShareholdingDetailSchema.country`, `percentage`
+- `LoanDetailSchema.note_reference`
+- `DetailedLoanSchema.note_reference`, `account_caption`
+- `TPFlagSchema.caveats`
+**Status**: FIXED - Production tested and working
+
+### Issue 2: Vercel Timeout - FIXED (Direct Convex Calls)
+**Error**: "Unable to connect to the AI service" / "Server Error" (on Vercel production)
+**Root Cause**: Vercel Hobby plan has hard 10-second function timeout. PDF extraction takes 60-90 seconds. Even calling Convex from Vercel API route still times out because Vercel kills the function.
+**Solution**: Modified frontend to call Convex action DIRECTLY (bypasses Vercel entirely)
+**Status**: FIXED - Production tested and working
+
+### Issue 3: Missing Convex Production API Key - FIXED
+**Error**: Server Error (500)
+**Root Cause**: `ANTHROPIC_API_KEY` was only set in Convex dev environment, not production
+**Fix Applied**: `npx convex env set ANTHROPIC_API_KEY <key> --prod`
+**Status**: FIXED
+
+### Implementation Summary
+
+**Architecture Change:**
+- OLD: Client → Vercel API → Convex Action → Claude API (Vercel timeout after 10s)
+- NEW: Client → Convex Action → Claude API (Convex 10-minute timeout)
+
+**Files Modified/Created (January 9):**
+1. `src/lib/schema.ts` - Added `.nullable()` to 10+ optional fields
+2. `convex/package.json` - CREATED with `@anthropic-ai/sdk` dependency
+3. `convex/actions/extractPdf.ts` - CREATED (Convex action for PDF extraction with full prompts)
+4. `src/hooks/useStreamingExtraction.ts` - MODIFIED to call Convex directly via `useAction`
+5. `src/app/api/extract/stream/route.ts` - MODIFIED (now backup, not primary)
+6. `tsconfig.json` - Added `@convex/*` path alias
+7. Vercel env: Added `CONVEX_URL`
+8. Convex prod env: Added `ANTHROPIC_API_KEY`
+
+### Deployments
+- Convex: https://fast-oriole-516.convex.cloud
+- Vercel: https://tp-extractor.vercel.app
+
+### Production Test Results
+- PDF extraction: WORKING
+- 60-90 second extractions: WORKING (no timeout)
+- Schema validation: WORKING (null values accepted)
+
+### Plan File
+Full plan saved at: `.claude/plans/rustling-coalescing-beacon.md`
+
+---
+
 # Session Notes - January 8, 2026
 
 ## Issue Investigated

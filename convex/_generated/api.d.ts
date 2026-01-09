@@ -20,6 +20,21 @@ import type { GenericId as Id } from "convex/values";
  * ```
  */
 export declare const api: {
+  actions: {
+    extractPdf: {
+      extractPdf: FunctionReference<
+        "action",
+        "public",
+        { pdfBase64: string },
+        {
+          cost_usd: number;
+          input_tokens: number;
+          output_tokens: number;
+          result: any;
+        }
+      >;
+    };
+  };
   extractions: {
     get: FunctionReference<
       "query",

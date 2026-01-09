@@ -1,12 +1,14 @@
 import { NextRequest } from "next/server";
-import { extractFromPDF } from "@/lib/claude";
+import { fetchAction } from "convex/nextjs";
+import { api } from "../../../../../convex/_generated/api";
 import { DEMO_EXTRACTION_RESULT } from "@/lib/demo-data";
 import { ExtractionResult } from "@/types/extraction";
+import { ExtractionResultSchema } from "@/lib/schema";
 
-// Check if API key is configured
-const isApiKeyConfigured = () => {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  return apiKey && apiKey !== "your_api_key_here" && apiKey.length > 10;
+// Check if Convex is configured (API key is now stored in Convex env)
+const isConvexConfigured = () => {
+  const convexUrl = process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL;
+  return convexUrl && convexUrl.length > 0;
 };
 
 // Rate limiting - simple in-memory store
@@ -97,15 +99,29 @@ async function streamDemoData(
   sendSSEEvent(controller, encoder, "complete", { success: true });
 }
 
-// Stream real extraction data
+// Stream real extraction data via Convex action (bypasses Vercel timeout)
 async function streamRealData(
   controller: ReadableStreamDefaultController,
   encoder: TextEncoder,
   base64: string
 ) {
   try {
-    // Call Claude API
-    const { result } = await extractFromPDF(base64);
+    // Call Convex action (has 10-minute timeout vs Vercel's 10 seconds)
+    // fetchAction uses CONVEX_URL env var automatically
+    const response = await fetchAction(api.actions.extractPdf.extractPdf, {
+      pdfBase64: base64,
+    });
+
+    // Validate the result with Zod schema
+    const validationResult = ExtractionResultSchema.safeParse(response.result);
+    if (!validationResult.success) {
+      console.error("Validation errors:", validationResult.error.errors);
+      throw new Error(
+        `Extraction validation failed: ${validationResult.error.errors.map((e) => e.message).join(", ")}`
+      );
+    }
+
+    const result = validationResult.data as ExtractionResult;
 
     // Stream in chunks with minimal delay for smoother UX
     sendSSEEvent(controller, encoder, "metadata", {
@@ -141,7 +157,7 @@ async function streamRealData(
 
     sendSSEEvent(controller, encoder, "tp_analysis", {
       tp_analysis: result.tp_analysis,
-      extraction_cost_usd: result.extraction_cost_usd,
+      extraction_cost_usd: response.cost_usd,
     });
 
     sendSSEEvent(controller, encoder, "complete", { success: true });
@@ -209,8 +225,8 @@ export async function POST(request: NextRequest) {
           message: "Extraction started",
         });
 
-        if (!isApiKeyConfigured()) {
-          console.log("API key not configured - streaming demo data");
+        if (!isConvexConfigured()) {
+          console.log("Convex not configured - streaming demo data");
           await streamDemoData(controller, encoder);
         } else {
           // Convert file to base64

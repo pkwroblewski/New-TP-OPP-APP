@@ -84,20 +84,60 @@ Implement custom email allowlist to restrict registration to pre-approved users 
 - **Vercel**: https://tp-extractor.vercel.app
 - **Convex**: https://dashboard.convex.dev/d/cautious-trout-725
 
+## CURRENT STATUS (January 9, 2026)
+
+### FULLY WORKING - ALL ISSUES RESOLVED
+
+Production app is fully functional at https://tp-extractor.vercel.app/analyze
+
+**Architecture:**
+- Frontend calls Convex action directly (bypasses Vercel timeout)
+- Convex action calls Claude API (10-minute timeout)
+- No more Vercel 10-second limit issues
+
+### Issues Fixed (January 9)
+
+1. **Schema Validation Bug**: Added `.nullable()` to 10+ optional schema fields
+2. **Vercel Timeout**: Frontend now calls Convex directly via `useAction` hook
+3. **Missing Convex Prod API Key**: Set `ANTHROPIC_API_KEY` in Convex production
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `convex/actions/extractPdf.ts` | Convex action - calls Claude API directly |
+| `src/hooks/useStreamingExtraction.ts` | Frontend hook - calls Convex via `useAction` |
+| `src/lib/schema.ts` | Zod schemas with `.nullable()` for null values |
+| `convex/package.json` | Anthropic SDK dependency for Convex |
+
+See `.claude/session-notes.md` for full debugging history.
+
+---
+
 ## Recent Changes (January 2026)
 
-### PDF Upload Error Handling (Fixed)
+### Direct Convex Calls from Frontend (January 9)
+- Modified `src/hooks/useStreamingExtraction.ts` to use `useAction` from `convex/react`
+- Frontend calls Convex action directly, bypassing Vercel entirely
+- Eliminates Vercel Hobby 10-second timeout issue completely
+
+### Convex Action for PDF Extraction (January 9)
+- Created `convex/actions/extractPdf.ts` - Runs Claude API with 10-minute timeout
+- Contains full extraction prompts (SYSTEM_PROMPT, USER_PROMPT)
+- Comprehensive error handling for API errors
+
+### Schema Validation Bug (January 9)
+- Added `.nullable()` to all optional string/number fields in `src/lib/schema.ts`
+- Fields: `note_reference`, `country`, `percentage`, `account_caption`, `caveats`, etc.
+- Claude returns `null` for missing values; Zod `.optional()` only allows `undefined`
+
+### PDF Upload Error Handling (January 8)
 - Added comprehensive error handling in `src/lib/claude.ts`
 - Lazy initialization of Anthropic client for serverless environments
 - User-friendly error messages for invalid PDFs, connection errors, rate limits
 
-### React Key Warning (Fixed)
-- Fixed in `src/components/data-tables/detailed-loans-table.tsx`
-- Changed fragment to `<Fragment key={index}>` in loans.map()
-
 ### Known Issues
-- **Vercel Timeout**: Hobby plan has 10-second function limit; PDF extraction may timeout
-- If "Connection error" occurs on Vercel, verify ANTHROPIC_API_KEY env var
+- None - production tested and working
 
 ### Session Notes
 See `.claude/session-notes.md` for detailed debugging history.

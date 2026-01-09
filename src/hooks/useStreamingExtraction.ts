@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useAction } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import {
   ExtractionResult,
   Metadata,
@@ -55,6 +57,9 @@ export function useStreamingExtraction() {
   const [state, setState] = useState<StreamingState>(initialState);
   const [isExtracting, setIsExtracting] = useState(false);
 
+  // Call Convex action directly (bypasses Vercel timeout)
+  const extractPdf = useAction(api.actions.extractPdf.extractPdf);
+
   const reset = useCallback(() => {
     setState(initialState);
     setIsExtracting(false);
@@ -65,142 +70,92 @@ export function useStreamingExtraction() {
     setIsExtracting(true);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      // Convert file to base64
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = btoa(
+        new Uint8Array(arrayBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          ""
+        )
+      );
 
-      const response = await fetch("/api/extract/stream", {
-        method: "POST",
-        body: formData,
-      });
+      // Call Convex action directly (has 10-minute timeout)
+      const response = await extractPdf({ pdfBase64: base64 });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Extraction failed");
-      }
+      // Extract the result
+      const result = response.result as ExtractionResult;
+      const cost = response.cost_usd;
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+      // Simulate streaming by updating state progressively
+      // This gives the user visual feedback of progress
 
-      if (!reader) {
-        throw new Error("Failed to read response stream");
-      }
+      await delay(50);
+      setState((prev) => ({
+        ...prev,
+        stage: "metadata",
+        metadata: result.metadata,
+      }));
 
-      let buffer = "";
+      await delay(50);
+      setState((prev) => ({
+        ...prev,
+        stage: "governance",
+        entity_governance: result.entity_governance || null,
+      }));
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      await delay(50);
+      setState((prev) => ({
+        ...prev,
+        stage: "entity",
+        entity_classification: result.entity_classification,
+      }));
 
-        buffer += decoder.decode(value, { stream: true });
+      await delay(50);
+      setState((prev) => ({
+        ...prev,
+        stage: "balance_sheet",
+        balance_sheet: result.balance_sheet,
+      }));
 
-        // Process complete SSE events
-        const events = buffer.split("\n\n");
-        buffer = events.pop() || ""; // Keep incomplete event in buffer
+      await delay(50);
+      setState((prev) => ({
+        ...prev,
+        stage: "profit_and_loss",
+        profit_and_loss: result.profit_and_loss,
+      }));
 
-        for (const event of events) {
-          if (!event.trim()) continue;
+      await delay(50);
+      setState((prev) => ({
+        ...prev,
+        stage: "notes",
+        notes_extraction: result.notes_extraction,
+      }));
 
-          const lines = event.split("\n");
-          let eventType = "";
-          let eventData = "";
+      await delay(50);
+      setState((prev) => ({
+        ...prev,
+        stage: "tp_analysis",
+        tp_analysis: result.tp_analysis,
+        extraction_cost_usd: cost,
+      }));
 
-          for (const line of lines) {
-            if (line.startsWith("event: ")) {
-              eventType = line.slice(7);
-            } else if (line.startsWith("data: ")) {
-              eventData = line.slice(6);
-            }
-          }
+      await delay(50);
+      setState((prev) => ({
+        ...prev,
+        stage: "complete",
+      }));
 
-          if (eventType && eventData) {
-            try {
-              const data = JSON.parse(eventData);
-              handleEvent(eventType, data);
-            } catch {
-              console.error("Failed to parse SSE data:", eventData);
-            }
-          }
-        }
-      }
     } catch (err) {
+      console.error("Extraction error:", err);
       setState((prev) => ({
         ...prev,
         stage: "error",
-        error: err instanceof Error ? err.message : "An error occurred",
+        error: err instanceof Error ? err.message : "An error occurred during extraction",
       }));
     } finally {
       setIsExtracting(false);
     }
-  }, []);
-
-  const handleEvent = (eventType: string, data: Record<string, unknown>) => {
-    setState((prev) => {
-      switch (eventType) {
-        case "connected":
-          return { ...prev, stage: "connecting" };
-
-        case "metadata":
-          return {
-            ...prev,
-            stage: "metadata",
-            metadata: data.metadata as Metadata,
-          };
-
-        case "governance":
-          return {
-            ...prev,
-            stage: "governance",
-            entity_governance: data.entity_governance as EntityGovernance,
-          };
-
-        case "entity":
-          return {
-            ...prev,
-            stage: "entity",
-            entity_classification:
-              data.entity_classification as EntityClassification,
-          };
-
-        case "balance_sheet":
-          return {
-            ...prev,
-            stage: "balance_sheet",
-            balance_sheet: data.balance_sheet as BalanceSheet,
-          };
-
-        case "profit_and_loss":
-          return {
-            ...prev,
-            stage: "profit_and_loss",
-            profit_and_loss: data.profit_and_loss as ProfitAndLoss,
-          };
-
-        case "notes":
-          return {
-            ...prev,
-            stage: "notes",
-            notes_extraction: data.notes_extraction as NotesExtraction,
-          };
-
-        case "tp_analysis":
-          return {
-            ...prev,
-            stage: "tp_analysis",
-            tp_analysis: data.tp_analysis as TPAnalysis,
-            extraction_cost_usd: data.extraction_cost_usd as number | null,
-          };
-
-        case "complete":
-          return { ...prev, stage: "complete" };
-
-        case "error":
-          return { ...prev, stage: "error", error: data.error as string };
-
-        default:
-          return prev;
-      }
-    });
-  };
+  }, [extractPdf]);
 
   // Build the complete result if all data is available
   const getCompleteResult = (): ExtractionResult | null => {
@@ -233,4 +188,9 @@ export function useStreamingExtraction() {
     reset,
     getCompleteResult,
   };
+}
+
+// Helper function
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
