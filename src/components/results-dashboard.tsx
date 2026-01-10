@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { ExtractionResult } from "@/types/extraction";
 import SummaryCards from "./summary-cards";
 import TPFlags from "./tp-flags";
@@ -44,13 +44,13 @@ export default function ResultsDashboard({
   const { metadata, tp_analysis } = result;
   const isLowConfidence = metadata.extraction_confidence === "low";
 
-  const tabs: { id: TabType; label: string }[] = [
+  const tabs = useMemo<{ id: TabType; label: string }[]>(() => [
     { id: "balance-sheet", label: "Balance Sheet" },
     { id: "pnl", label: "P&L" },
     { id: "ic-details", label: "IC Details" },
     { id: "analysis", label: "Analysis" },
     { id: "raw-json", label: "Raw JSON" },
-  ];
+  ], []);
 
   const handleTabKeyDown = useCallback(
     (e: React.KeyboardEvent, currentIndex: number) => {

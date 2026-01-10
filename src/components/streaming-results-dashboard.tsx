@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { StreamingState } from "@/hooks/useStreamingExtraction";
 import SummaryCards from "./summary-cards";
 import TPFlags from "./tp-flags";
@@ -45,13 +45,13 @@ export default function StreamingResultsDashboard({
   const isLowConfidence = metadata?.extraction_confidence === "low";
   const isComplete = stage === "complete";
 
-  const tabs: { id: TabType; label: string }[] = [
+  const tabs = useMemo<{ id: TabType; label: string }[]>(() => [
     { id: "balance-sheet", label: "Balance Sheet" },
     { id: "pnl", label: "P&L" },
     { id: "ic-details", label: "IC Details" },
     { id: "analysis", label: "Analysis" },
     { id: "raw-json", label: "Raw JSON" },
-  ];
+  ], []);
 
   const handleTabKeyDown = useCallback(
     (e: React.KeyboardEvent, currentIndex: number) => {
