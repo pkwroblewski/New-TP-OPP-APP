@@ -15,7 +15,7 @@ export const MetadataSchema = z.object({
 });
 
 export const BalanceSheetItemSchema = z.object({
-  name: z.string(),
+  name: z.string().nullable(),
   current_year: z.number().nullable(),
   previous_year: z.number().nullable(),
   is_ic: z.boolean().default(false),
@@ -42,7 +42,7 @@ export const BalanceSheetSchema = z.object({
 });
 
 export const ProfitAndLossItemSchema = z.object({
-  name: z.string(),
+  name: z.string().nullable(),
   current_year: z.number().nullable(),
   previous_year: z.number().nullable(),
   is_ic: z.boolean().default(false),
@@ -59,7 +59,7 @@ export const ProfitAndLossSchema = z.object({
 });
 
 export const ShareholdingDetailSchema = z.object({
-  counterparty: z.string(),
+  counterparty: z.string().nullable(),
   country: z.string().optional().nullable(),
   percentage: z.number().optional().nullable(),
   carrying_value: z.number().nullable(),
@@ -67,7 +67,7 @@ export const ShareholdingDetailSchema = z.object({
 });
 
 export const LoanDetailSchema = z.object({
-  counterparty: z.string(),
+  counterparty: z.string().nullable(),
   currency: z.string().default("EUR"),
   amount: z.number().nullable(),
   interest_rate: z.number().optional().nullable(),
@@ -78,13 +78,13 @@ export const LoanDetailSchema = z.object({
 // New schemas for enhanced extraction
 
 export const BoardMemberSchema = z.object({
-  name: z.string(),
+  name: z.string().nullable(),
   role: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
 });
 
 export const DetailedLoanSchema = z.object({
-  counterparty_name: z.string(),
+  counterparty_name: z.string().nullable(),
   jurisdiction: z.string().optional().nullable(),
   instrument_type: z.enum([
     "interest_bearing",
@@ -109,8 +109,8 @@ export const DetailedLoanSchema = z.object({
 });
 
 export const AccountCaptionSchema = z.object({
-  code: z.string(), // e.g. "1139", "1147"
-  description: z.string(),
+  code: z.string().nullable(), // e.g. "1139", "1147"
+  description: z.string().nullable(),
   current_year: z.number().nullable(),
   previous_year: z.number().nullable(),
   is_ic: z.boolean().default(false),
@@ -158,11 +158,11 @@ export const EntityClassificationSchema = z.object({
 });
 
 export const TPFlagSchema = z.object({
-  priority: z.enum(["high", "medium", "low"]),
-  category: z.string(),
-  description: z.string(),
+  priority: z.enum(["high", "medium", "low"]).nullable(),
+  category: z.string().nullable(),
+  description: z.string().nullable(),
   affected_amount: z.number().nullable(),
-  source: z.string(),
+  source: z.string().nullable(),
   caveats: z.string().optional().nullable(),
 });
 
@@ -190,15 +190,15 @@ export const TPAnalysisSchema = z.object({
   capitalization: CapitalizationSchema,
   cash_pooling_identified: z.boolean().default(false),
   priority_flags: z.array(TPFlagSchema).default([]),
-  overall_tp_opportunity_score: z.enum(["A", "B", "C"]),
-  score_rationale: z.string(),
+  overall_tp_opportunity_score: z.enum(["A", "B", "C"]).nullable(),
+  score_rationale: z.string().nullable(),
   recommended_focus_areas: z.array(z.string()).default([]),
   data_quality_notes: z.array(z.string()).default([]),
 });
 
 // Company Profile schemas - AI-generated profile based on PDF content
 export const CompanyProfileSectionSchema = z.object({
-  content: z.string(),
+  content: z.string().nullable(),
   sources: z.array(z.string()).default([]),
   data_availability: z.enum(["complete", "partial", "unavailable"]).default("partial"),
 });

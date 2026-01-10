@@ -126,10 +126,10 @@ See `.claude/session-notes.md` for full debugging history.
 - Contains full extraction prompts (SYSTEM_PROMPT, USER_PROMPT)
 - Comprehensive error handling for API errors
 
-### Schema Validation Bug (January 9)
-- Added `.nullable()` to all optional string/number fields in `src/lib/schema.ts`
-- Fields: `note_reference`, `country`, `percentage`, `account_caption`, `caveats`, etc.
-- Claude returns `null` for missing values; Zod `.optional()` only allows `undefined`
+### Schema Validation Bug (January 9-10)
+- Added `.nullable()` to all string/number/enum fields that Claude might return as null
+- **January 10 audit**: Fixed 15 additional fields including `counterparty_name`, `counterparty`, `name`, `code`, `description`, `priority`, `category`, `source`, `score_rationale`, `content`, `overall_tp_opportunity_score`
+- Root cause: Claude returns `null` for missing values; Zod's `z.string()` and `z.enum()` reject null (`.optional()` only allows `undefined`, not `null`)
 
 ### PDF Upload Error Handling (January 8)
 - Added comprehensive error handling in `src/lib/claude.ts`
