@@ -18,10 +18,9 @@ export default function AnalyzePage() {
   const [pdfData, setPdfData] = useState<string | null>(null);
   const [lastFile, setLastFile] = useState<File | null>(null);
   const [savedExtractionId, setSavedExtractionId] = useState<Id<"extractions"> | null>(null);
-  const { state, isExtracting, elapsedSeconds, startExtraction, reset, getCompleteResult } =
+  const { state, isExtracting, elapsedSeconds, startExtraction, reset, getCompleteResult, lastStorageId } =
     useStreamingExtraction();
   const { addToast } = useToast();
-  const generateUploadUrl = useMutation(api.extractions.generateUploadUrl);
   const saveExtraction = useMutation(api.extractions.save);
   const hasSavedRef = useRef(false);
 
@@ -68,29 +67,10 @@ export default function AnalyzePage() {
     if (isComplete && completeResult && !hasSavedRef.current) {
       hasSavedRef.current = true;
 
-      const saveWithPdf = async () => {
+      const saveExtraction_ = async () => {
         try {
-          // Upload PDF to Convex storage if we have the file
-          let pdfStorageId: Id<"_storage"> | undefined = undefined;
-
-          if (lastFile) {
-            // Get upload URL
-            const uploadUrl = await generateUploadUrl();
-
-            // Upload the file
-            const uploadResponse = await fetch(uploadUrl, {
-              method: "POST",
-              headers: { "Content-Type": lastFile.type },
-              body: lastFile,
-            });
-
-            if (uploadResponse.ok) {
-              const { storageId } = await uploadResponse.json();
-              pdfStorageId = storageId;
-            } else {
-              console.warn("Failed to upload PDF, saving extraction without PDF");
-            }
-          }
+          // Use the storage ID from the extraction hook (PDF already uploaded during extraction)
+          const pdfStorageId = lastStorageId || undefined;
 
           // Calculate total IC exposure
           const icLoansGranted = completeResult.tp_analysis.ic_financing.total_loans_granted || 0;
@@ -127,9 +107,9 @@ export default function AnalyzePage() {
         }
       };
 
-      saveWithPdf();
+      saveExtraction_();
     }
-  }, [isComplete, completeResult, saveExtraction, generateUploadUrl, lastFile, addToast]);
+  }, [isComplete, completeResult, saveExtraction, lastStorageId, addToast]);
 
   // Show upload zone when idle
   if (state.stage === "idle" || (state.stage === "error" && !hasData)) {

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 import type {
   ExtractionResult,
   Metadata,
@@ -129,7 +130,9 @@ export function useStreamingExtraction() {
   const [state, setState] = useState<StreamingState>(initialState);
   const [isExtracting, setIsExtracting] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [lastStorageId, setLastStorageId] = useState<Id<"_storage"> | null>(null);
   const extractPdf = useAction(api.actions.extractPdf.extractPdf);
+  const generateUploadUrl = useMutation(api.extractions.generateUploadUrl);
 
   // Track elapsed time during extraction
   useEffect(() => {
@@ -157,11 +160,11 @@ export function useStreamingExtraction() {
   }, []);
 
   const startExtraction = useCallback(
-    async function startExtraction(file: File): Promise<void> {
+    async function startExtraction(file: File): Promise<Id<"_storage"> | null> {
       // Guard against concurrent extractions
       if (isExtracting) {
         console.warn("Extraction already in progress, ignoring request");
-        return;
+        return null;
       }
 
       // Validate file before processing
@@ -172,7 +175,7 @@ export function useStreamingExtraction() {
           stage: "error",
           error: validation.error || "Invalid file",
         });
-        return;
+        return null;
       }
 
       // Log warning for large files
@@ -182,10 +185,26 @@ export function useStreamingExtraction() {
 
       setState({ ...initialState, stage: "connecting" });
       setIsExtracting(true);
+      setLastStorageId(null);
 
       try {
-        const base64 = await fileToBase64(file);
-        const response = await extractPdf({ pdfBase64: base64 });
+        // Step 1: Upload PDF to Convex storage (bypasses 5MB argument limit)
+        const uploadUrl = await generateUploadUrl();
+        const uploadResponse = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload PDF. Please try again.");
+        }
+
+        const { storageId } = await uploadResponse.json() as { storageId: Id<"_storage"> };
+        setLastStorageId(storageId);
+
+        // Step 2: Call extraction action with storage ID
+        const response = await extractPdf({ pdfStorageId: storageId });
 
         // Validate response with Zod schema
         const parseResult = ExtractionResultSchema.safeParse(response.result);
@@ -214,6 +233,8 @@ export function useStreamingExtraction() {
 
         await delay(TRANSITION_DELAY_MS);
         setState((prev) => ({ ...prev, stage: "complete" }));
+
+        return storageId;
       } catch (err) {
         console.error("Extraction error:", err);
         setState((prev) => ({
@@ -221,11 +242,12 @@ export function useStreamingExtraction() {
           stage: "error",
           error: err instanceof Error ? err.message : "An error occurred during extraction",
         }));
+        return null;
       } finally {
         setIsExtracting(false);
       }
     },
-    [extractPdf, isExtracting]
+    [extractPdf, generateUploadUrl, isExtracting]
   );
 
   const getCompleteResult = useCallback(function getCompleteResult(): ExtractionResult | null {
@@ -255,5 +277,6 @@ export function useStreamingExtraction() {
     startExtraction,
     reset,
     getCompleteResult,
+    lastStorageId,
   };
 }

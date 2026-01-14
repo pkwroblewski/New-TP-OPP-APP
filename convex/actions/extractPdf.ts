@@ -312,7 +312,7 @@ Respond with ONLY the JSON object, no other text.`;
 
 export const extractPdf = action({
   args: {
-    pdfBase64: v.string(),
+    pdfStorageId: v.id("_storage"),
   },
   returns: v.object({
     result: v.any(),
@@ -337,8 +337,17 @@ export const extractPdf = action({
       throw new Error("ANTHROPIC_API_KEY environment variable is not configured");
     }
 
+    // Read PDF from Convex storage
+    const pdfBlob = await ctx.storage.get(args.pdfStorageId);
+    if (!pdfBlob) {
+      throw new Error("PDF file not found in storage. Please try uploading again.");
+    }
+
+    // Convert Blob to base64 for Claude API
+    const arrayBuffer = await pdfBlob.arrayBuffer();
+    const base64Data = Buffer.from(arrayBuffer).toString("base64");
+
     const anthropic = new Anthropic({ apiKey });
-    const base64Data = stripBase64Prefix(args.pdfBase64);
 
     let response;
     try {

@@ -25,7 +25,7 @@ export declare const api: {
       extractPdf: FunctionReference<
         "action",
         "public",
-        { pdfBase64: string },
+        { pdfStorageId: Id<"_storage"> },
         {
           cost_usd: number;
           input_tokens: number;
