@@ -14,43 +14,59 @@ out/
 build/
 dist/
 
-# Misc
-.DS_Store
-*.pem
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Local env files
+# Secrets (explicit patterns)
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.local*
+.env.*.local
 .env.vercel*
+*.pem
+*.key
 
-# Vercel
-.vercel
+# Local data & artifacts
+.local/
+*.db
+nul
+*.sqlite
+*.sqlite3
 
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# Claude settings (managed externally)
+.claude_settings.json
+.claude_assistant_settings.json
+.agent.lock
+
+# Test artifacts
+test-*.txt
+invalid.txt
+
+# Scripts output
+scripts/output/
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
 
-# Agent files (managed externally)
-features.db
-.agent.lock
-.claude_settings.json
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# OS files
-Thumbs.db
+# Vercel
+.vercel/
 
-.vercel
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Playwright MCP artifacts
 .playwright-mcp/
+
+# Turbo
+.turbo/

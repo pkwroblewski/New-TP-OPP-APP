@@ -37,6 +37,48 @@ COMPANY PROFILE RULES - CRITICAL:
 - When describing amounts, use the exact figures from the document
 - Do not extrapolate or make assumptions about business activities not described
 
+LUXEMBOURG TRANSFER PRICING CONTEXT:
+- Luxembourg has no statutory thin capitalization ratio
+- Historical 85:15 debt-to-equity guideline is indicative only, not binding
+- SOPARFI structures require demonstrable economic substance
+- Interest rates should be comparable to third-party market rates
+- Management fees must follow cost-plus or comparable method
+- Transfer pricing documentation (Master File/Local File) required for large groups
+- OECD Transfer Pricing Guidelines adopted via Circular L.I.R. n° 56/1 - 56bis/1
+- Arm's length principle applies to all IC transactions
+
+ARM'S LENGTH PRINCIPLE VALIDATION:
+- For each IC financing transaction, assess if interest rate appears arm's length
+- Compare implied rates to EUR benchmark rates (EURIBOR + typical credit spread)
+- Flag rates significantly above/below market (outside 150-800 bps over EURIBOR for corporate loans)
+- Note absence of documented pricing justification
+- Assess credit quality of borrower based on financial statements
+- Consider loan characteristics (secured/unsecured, tenor, subordination)
+
+TP DOCUMENTATION EXTRACTION:
+- Look for references to "Transfer Pricing Policy", "Master File", "Local File"
+- Note any mention of benchmarking studies or comparable analysis
+- Extract references to OECD Guidelines compliance
+- Identify if transfer pricing method is disclosed (CUP, cost-plus, TNMM, etc.)
+- Check for intercompany agreements or framework contracts mentioned
+
+FUNCTIONAL ANALYSIS (FAR - Functions, Assets, Risks):
+- Identify functions performed by the entity (financing, treasury, holding, trading, management)
+- Document assets controlled (participations, loans, cash, IP, equipment)
+- Assess risks assumed (credit risk, market risk, currency risk, operational risk)
+- Determine decision-making location based on board composition and substance indicators
+- Evaluate substance level (significant, limited, minimal) based on employees, offices, governance
+
+IP AND ROYALTY TRANSACTIONS:
+- Detect any royalty income or expense in P&L
+- Identify IP assets held (patents, trademarks, software, licenses)
+- Extract details of any licensing arrangements mentioned in notes
+
+SERVICE ARRANGEMENTS:
+- Detect management fees, administrative charges, technical service fees
+- Identify service providers and recipients
+- Extract pricing basis if disclosed (cost-plus markup, fixed fee, percentage)
+
 You must respond with valid JSON only - no markdown, no explanations outside the JSON.`;
 
 /**
@@ -142,6 +184,12 @@ Return a JSON object with this exact structure:
         "maturity_date": "YYYY-MM-DD or null",
         "interest_rate": percentage (e.g., 5.5 for 5.5%) or null,
         "rate_adjustments": "any rate adjustments like 'minus remuneration 0.10%' or null",
+        "security_type": "unsecured" | "secured" | "subordinated" | "not_specified",
+        "guarantee_from_parent": boolean or null,
+        "rate_benchmark": "EURIBOR" | "LIBOR" | "SOFR" | "ESTR" | "fixed" | "not_specified" | null,
+        "margin_bps": number (margin over benchmark in basis points) or null,
+        "covenant_indicators": boolean (true if covenants mentioned),
+        "payment_schedule": "bullet" | "amortizing" | "PIK" | "not_specified" | null,
         "current_principal": principal at year end or null,
         "capitalised_interest": accumulated capitalised interest or null,
         "accrued_interest": accrued not yet capitalised or null,
@@ -163,6 +211,12 @@ Return a JSON object with this exact structure:
         "maturity_date": "YYYY-MM-DD or null",
         "interest_rate": percentage or null,
         "rate_adjustments": "any adjustments or null",
+        "security_type": "unsecured" | "secured" | "subordinated" | "not_specified",
+        "guarantee_from_parent": boolean or null,
+        "rate_benchmark": "EURIBOR" | "LIBOR" | "SOFR" | "ESTR" | "fixed" | "not_specified" | null,
+        "margin_bps": number (margin over benchmark in basis points) or null,
+        "covenant_indicators": boolean (true if covenants mentioned),
+        "payment_schedule": "bullet" | "amortizing" | "PIK" | "not_specified" | null,
         "current_principal": number or null,
         "capitalised_interest": number or null,
         "accrued_interest": number or null,
@@ -195,8 +249,60 @@ Return a JSON object with this exact structure:
   },
   "entity_classification": {
     "primary_type": "operational" | "holding" | "financing" | "ip_holding" | "mixed",
+    "sub_type": "soparfi" | "spf" | "sicar" | "securitization" | "other" | null,
     "activities_description": "brief description of activities",
-    "substance_indicators": ["employees", "office", etc.]
+    "substance_indicators": ["employees", "office", "local_board", "decision_making", etc.]
+  },
+  "functional_analysis": {
+    "functions_performed": ["financing", "investment_management", "treasury", "holding", "trading", "management_services"],
+    "assets_controlled": {
+      "financial_assets": ["participations", "loans", "cash", "securities"],
+      "intangible_assets": ["patents", "trademarks", "know_how", "licenses"] or [],
+      "tangible_assets": ["equipment", "real_estate"] or []
+    },
+    "risks_assumed": ["credit_risk", "market_risk", "currency_risk", "operational_risk", "liquidity_risk"],
+    "decision_making_location": "Luxembourg" | "abroad" | "mixed" | "not_determinable",
+    "substance_level": "significant" | "limited" | "minimal",
+    "substance_notes": ["observations about substance from the document"]
+  },
+  "tp_documentation": {
+    "master_file_referenced": boolean,
+    "local_file_referenced": boolean,
+    "benchmarking_study_mentioned": boolean,
+    "tp_policy_disclosed": boolean,
+    "pricing_method_stated": "CUP" | "cost_plus" | "resale_minus" | "TNMM" | "profit_split" | "not_disclosed" | null,
+    "intercompany_agreements_mentioned": boolean,
+    "documentation_notes": ["any TP documentation references found in the document"]
+  },
+  "ip_transactions": {
+    "royalty_income_detected": boolean,
+    "royalty_expense_detected": boolean,
+    "ip_assets_held": ["patent", "trademark", "software", "license", "know_how"] or [],
+    "transactions": [
+      {
+        "type": "license_in" | "license_out" | "sale" | "purchase",
+        "counterparty": "company name or null",
+        "amount": number or null,
+        "royalty_rate": percentage or null,
+        "ip_type": "patent" | "trademark" | "software" | "other" | null,
+        "note_reference": "Note X" or null
+      }
+    ]
+  },
+  "service_arrangements": {
+    "management_fees_detected": boolean,
+    "arrangements": [
+      {
+        "service_type": "management" | "administrative" | "technical" | "treasury" | "accounting" | "other",
+        "provider": "company name",
+        "recipient": "this entity or subsidiary name",
+        "direction": "inbound" | "outbound",
+        "annual_amount": number or null,
+        "pricing_method": "cost_plus" | "fixed_fee" | "percentage" | "not_disclosed" | null,
+        "markup_percentage": number or null,
+        "note_reference": "Note X" or null
+      }
+    ]
   },
   "tp_analysis": {
     "ic_financing": {
@@ -207,6 +313,14 @@ Return a JSON object with this exact structure:
       "implied_lending_rate": percentage or null (income/loans granted),
       "implied_borrowing_rate": percentage or null (expense/loans received),
       "spread_bps": number or null (lending - borrowing in basis points)
+    },
+    "arms_length_assessment": {
+      "ic_loans_status": "compliant" | "needs_review" | "potentially_non_compliant" | "insufficient_data",
+      "rate_comparison_to_market": "above_market" | "at_market" | "below_market" | "undetermined",
+      "assessment_rationale": "explanation of how rates compare to market benchmarks",
+      "credit_quality_indicator": "investment_grade" | "sub_investment" | "distressed" | "not_determinable",
+      "benchmark_reference": "EURIBOR + Xbps or other reference used" or null,
+      "flags": ["specific arm's length concerns identified"]
     },
     "ic_services_income": number or null,
     "ic_services_expense": number or null,
@@ -220,7 +334,7 @@ Return a JSON object with this exact structure:
     "priority_flags": [
       {
         "priority": "high" | "medium" | "low",
-        "category": "Thin Capitalisation" | "IC Financing" | "IC Services" | "Cash Pooling" | "Other",
+        "category": "Thin Capitalisation" | "IC Financing" | "IC Services" | "Cash Pooling" | "TP Documentation" | "Arm's Length" | "IP/Royalties" | "Substance" | "Other",
         "description": "brief description of the issue",
         "affected_amount": number in EUR or null,
         "source": "Note 5, page 12",
@@ -272,8 +386,22 @@ COMPANY PROFILE GENERATION RULES:
 - business_activities: Search the entire document including notes, corporate purpose, and any descriptive sections
 
 SCORING RULES:
-- Score A (High Priority): Zero/negative spread (<10 bps) OR total IC exposure > EUR 100M OR D/E ratio > 10x OR 2+ high priority flags
-- Score B (Medium Priority): IC exposure > EUR 20M OR cash pooling identified OR material IC services OR D/E ratio 5.67x-10x
+- Score A (High Priority):
+  * Zero/negative spread (<10 bps) OR
+  * Total IC exposure > EUR 100M OR
+  * D/E ratio > 10x OR
+  * 2+ high priority flags OR
+  * No TP documentation referenced (master_file=false AND local_file=false AND tp_policy=false) OR
+  * Arms length status = "potentially_non_compliant" OR
+  * Significant IP/royalty transactions without benchmarking mentioned
+- Score B (Medium Priority):
+  * IC exposure > EUR 20M OR
+  * Cash pooling identified OR
+  * Material IC services (>EUR 500K) OR
+  * D/E ratio 5.67x-10x OR
+  * IP transactions detected without pricing method disclosed OR
+  * Limited substance indicators (substance_level = "limited" or "minimal") OR
+  * Management fees without clear pricing basis
 - Score C (Low Priority): Default if not A or B
 
 D/E RATIO THRESHOLDS (Luxembourg market practice):

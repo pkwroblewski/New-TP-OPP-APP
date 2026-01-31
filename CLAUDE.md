@@ -1,35 +1,24 @@
-# CLAUDE.md - Project Instructions for Claude Code
+# CLAUDE.md - Project Instructions
 
-This file provides guidance to Claude Code when working on this project.
+## Quick Reference
 
-## Project Overview
+| | |
+|---|---|
+| **Project** | TP Extractor - Luxembourg Transfer Pricing Analysis |
+| **Stack** | Next.js 14 + Convex + Claude AI + Clerk Auth |
+| **Status** | Production - [See STATUS.md](.claude/STATUS.md) |
+| **Production** | https://tp-extractor.vercel.app |
 
-**TP Extractor** - A Luxembourg Transfer Pricing Analysis Tool built with Next.js 14, TypeScript, and Anthropic Claude API.
+## Documentation Index
 
-## Tech Stack
-
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui
-- **Backend**: Next.js API Routes + Convex (database, auth, real-time)
-- **AI**: Anthropic Claude API (Claude Sonnet)
-- **Database**: Convex with Clerk authentication
-- **PDF**: react-pdf / pdf.js
-- **Validation**: Zod schemas
-- **Theme**: Dark mode first
-
-## Project Structure
-
-```
-/                       # Root directory
-  convex/              # Convex backend (schema, functions, auth)
-  src/
-    app/               # Next.js App Router pages and API routes
-    components/        # React components (shadcn/ui based)
-    lib/               # Utilities, Claude client, schemas
-    types/             # TypeScript interfaces
-  public/              # Static assets
-  convex.json          # Convex codegen config
-  .env.local           # API keys (not committed)
-```
+| Document | Purpose |
+|----------|---------|
+| [.claude/STATUS.md](.claude/STATUS.md) | Current status & known issues |
+| [.claude/CHANGELOG.md](.claude/CHANGELOG.md) | Recent changes |
+| [.claude/rules/](.claude/rules/) | Coding rules & guidelines |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture |
+| [docs/TP_ANALYSIS_CONFIG.md](docs/TP_ANALYSIS_CONFIG.md) | TP analysis rules |
+| [docs/README.md](docs/README.md) | Full documentation index |
 
 ## Development Commands
 
@@ -50,101 +39,38 @@ npx convex logs        # View logs
 
 ## Key Files
 
-- `src/lib/schema.ts` - Zod validation schemas for extraction
-- `src/lib/claude.ts` - Claude API client
-- `src/lib/prompts.ts` - Extraction prompts
-- `src/app/api/extract/route.ts` - Main extraction endpoint
-- `convex/schema.ts` - Convex database schema
-- `convex/extractions.ts` - Convex query/mutation functions
-
-## Rules and Guidelines
-
-Additional coding rules are in `.claude/rules/`:
-
-- [convex-rules.md](.claude/rules/convex-rules.md) - Convex function syntax, validators, queries, mutations
-- [convex-ai-docs.md](.claude/rules/convex-ai-docs.md) - AI code generation best practices with Convex
-
-For Convex implementation details, see:
-- [docs/convex-implementation-plan.md](docs/convex-implementation-plan.md)
-
-## Testing
-
-Features are tracked in `features.db` SQLite database using MCP tools.
-
-## Pending Tasks
-
-### User Allowlist (Authentication Restriction)
-Implement custom email allowlist to restrict registration to pre-approved users only.
-- Plan file: `.claude/plans/bubbly-crunching-crescent.md`
-- Status: Planned, not implemented
-- Files to modify: `convex/schema.ts`, `convex/auth.ts` (new), `src/components/auth-guard.tsx` (new), `src/components/convex-provider.tsx`
-
-## Deployment
-
-- **Vercel**: https://tp-extractor.vercel.app
-- **Convex**: https://dashboard.convex.dev/d/cautious-trout-725
-
-## CURRENT STATUS (January 9, 2026)
-
-### FULLY WORKING - ALL ISSUES RESOLVED
-
-Production app is fully functional at https://tp-extractor.vercel.app/analyze
-
-**Architecture:**
-- Frontend calls Convex action directly (bypasses Vercel timeout)
-- Convex action calls Claude API (10-minute timeout)
-- No more Vercel 10-second limit issues
-
-### Issues Fixed (January 9)
-
-1. **Schema Validation Bug**: Added `.nullable()` to 10+ optional schema fields
-2. **Vercel Timeout**: Frontend now calls Convex directly via `useAction` hook
-3. **Missing Convex Prod API Key**: Set `ANTHROPIC_API_KEY` in Convex production
-
-### Key Files
-
 | File | Purpose |
 |------|---------|
-| `convex/actions/extractPdf.ts` | Convex action - calls Claude API directly |
-| `src/hooks/useStreamingExtraction.ts` | Frontend hook - calls Convex via `useAction` |
-| `src/lib/schema.ts` | Zod schemas with `.nullable()` for null values |
-| `convex/package.json` | Anthropic SDK dependency for Convex |
+| `convex/actions/extractPdf.ts` | Main extraction action (Claude API) |
+| `src/hooks/useStreamingExtraction.ts` | Frontend extraction hook |
+| `src/lib/schema.ts` | Zod validation schemas |
+| `convex/schema.ts` | Database schema |
 
-See `.claude/session-notes.md` for full debugging history.
+## Project Structure
 
----
+```
+/
+├── convex/           # Backend (schema, actions, functions)
+├── src/
+│   ├── app/         # Next.js pages & API routes
+│   ├── components/  # React components
+│   ├── hooks/       # Custom hooks
+│   ├── lib/         # Utilities & schemas
+│   └── types/       # TypeScript interfaces
+├── docs/            # Documentation
+├── scripts/         # Utility scripts
+└── public/          # Static assets
+```
 
-## Recent Changes (January 2026)
+## Rules
 
-### Direct Convex Calls from Frontend (January 9)
-- Modified `src/hooks/useStreamingExtraction.ts` to use `useAction` from `convex/react`
-- Frontend calls Convex action directly, bypassing Vercel entirely
-- Eliminates Vercel Hobby 10-second timeout issue completely
-
-### Convex Action for PDF Extraction (January 9)
-- Created `convex/actions/extractPdf.ts` - Runs Claude API with 10-minute timeout
-- Contains full extraction prompts (SYSTEM_PROMPT, USER_PROMPT)
-- Comprehensive error handling for API errors
-
-### Schema Validation Bug (January 9-10)
-- Added `.nullable()` to all string/number/enum fields that Claude might return as null
-- **January 10 audit**: Fixed 15 additional fields including `counterparty_name`, `counterparty`, `name`, `code`, `description`, `priority`, `category`, `source`, `score_rationale`, `content`, `overall_tp_opportunity_score`
-- Root cause: Claude returns `null` for missing values; Zod's `z.string()` and `z.enum()` reject null (`.optional()` only allows `undefined`, not `null`)
-
-### PDF Upload Error Handling (January 8)
-- Added comprehensive error handling in `src/lib/claude.ts`
-- Lazy initialization of Anthropic client for serverless environments
-- User-friendly error messages for invalid PDFs, connection errors, rate limits
-
-### Known Issues
-- None - production tested and working
-
-### Session Notes
-See `.claude/session-notes.md` for detailed debugging history.
+See [.claude/rules/](.claude/rules/) for coding standards:
+- [convex-rules.md](.claude/rules/convex-rules.md) - Convex patterns
+- [convex-ai-docs.md](.claude/rules/convex-ai-docs.md) - AI best practices
 
 ## Important Notes
 
-- API key stored in `.env.local` - never commit
-- File size limit: 50MB for PDF uploads
-- Cost: ~$0.20-0.30 per extraction using Claude Sonnet
-- Test PDFs must be valid, complete PDF documents (not just headers)
+- API keys in `.env.local` (never commit) and Convex dashboard
+- PDF size limit: 50MB
+- Cost: ~$0.20-0.30 per extraction
+- Features tracked in `.local/data/features.db`
