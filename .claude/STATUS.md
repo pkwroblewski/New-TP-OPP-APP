@@ -32,10 +32,16 @@ None - production tested and working.
 
 | File | Purpose |
 |------|---------|
-| `convex/actions/extractPdf.ts` | Convex action - calls Claude API directly |
+| `convex/actions/extractPdf.ts` | Convex action - calls Claude API with TP prompts |
 | `src/hooks/useStreamingExtraction.ts` | Frontend hook - calls Convex via `useAction` |
-| `src/lib/schema.ts` | Zod schemas with `.nullable()` for null values |
-| `convex/package.json` | Anthropic SDK dependency for Convex |
+| `src/lib/schema.ts` | Zod schemas for extraction validation (frontend) |
+| `convex/lib/extraction_schema.ts` | Zod schemas mirror (Convex runtime) |
+| `src/types/extraction.ts` | TypeScript interfaces for extraction result |
+| `convex/schema.ts` | Convex database schema |
+
+## Schema Version
+
+Current: **2.0.0** (Phase 2 - Schema Consolidation)
 
 ## Recent Debugging History
 

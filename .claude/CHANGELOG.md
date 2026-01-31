@@ -5,6 +5,16 @@ All notable changes to TP Extractor.
 ## January 2026
 
 ### January 31
+- **Phase 2: Schema Consolidation**
+  - Added Zod schemas for all new Phase 1 prompt fields
+  - New schemas: `FunctionalAnalysisSchema`, `TPDocumentationSchema`, `IPTransactionsSchema`, `ServiceArrangementsSchema`, `ArmsLengthAssessmentSchema`
+  - Enhanced `DetailedLoanSchema`: security_type, guarantee_from_parent, rate_benchmark, margin_bps, covenant_indicators, payment_schedule
+  - Enhanced `EntityClassificationSchema`: sub_type field for Luxembourg vehicles
+  - Added `arms_length_assessment` to `TPAnalysisSchema`
+  - Added `schema_version` field for future schema migrations
+  - Updated Convex database schema with `schemaVersion` field
+  - Mirrored all schemas in both `src/lib/schema.ts` and `convex/lib/extraction_schema.ts`
+  - Updated TypeScript interfaces in `src/types/extraction.ts`
 - **Phase 1: Prompt Enhancement for Luxembourg TP Compliance**
   - Added Luxembourg Transfer Pricing Context to SYSTEM_PROMPT
   - Added Arm's Length Principle Validation guidance
