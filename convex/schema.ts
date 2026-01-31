@@ -16,6 +16,8 @@ export default defineSchema({
     extractionData: v.any(), // Full JSON extraction result
     extractionCostUsd: v.optional(v.number()),
     pdfStorageId: v.optional(v.id("_storage")), // PDF file in Convex storage
+    // Schema version for tracking extraction format changes (Phase 2)
+    schemaVersion: v.optional(v.string()),
   })
     .index("by_user", ["userId"]),
     // Note: _creationTime is automatically appended to all indexes,

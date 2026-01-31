@@ -38,6 +38,7 @@ export type DataModel = {
       flagsCount: number;
       pdfStorageId?: Id<"_storage">;
       rcsNumber?: string;
+      schemaVersion?: string;
       totalAssets?: number;
       totalIcExposure?: number;
       tpScore: "A" | "B" | "C";
@@ -57,6 +58,7 @@ export type DataModel = {
       | "flagsCount"
       | "pdfStorageId"
       | "rcsNumber"
+      | "schemaVersion"
       | "totalAssets"
       | "totalIcExposure"
       | "tpScore"
