@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useExtraction } from "@/hooks/useExtraction";
 import AuthHeader from "@/components/auth-header";
+import { TPDocumentationCard } from "@/components/tp-documentation-card";
 import {
   Loader2,
   AlertCircle,
@@ -162,7 +163,7 @@ export default function CompanyProfilePage() {
     );
   }
 
-  const { metadata, company_profile } = extractionResult;
+  const { metadata, company_profile, tp_documentation } = extractionResult;
 
   // Handle older extractions that don't have company_profile
   if (!company_profile) {
@@ -277,6 +278,11 @@ export default function CompanyProfilePage() {
             sources={business_activities.sources}
             availability={business_activities.data_availability}
           />
+
+          {/* TP Documentation Status */}
+          {tp_documentation && (
+            <TPDocumentationCard tpDocumentation={tp_documentation} />
+          )}
 
           {/* TP Relevant Information */}
           <div className="bg-slate-800 rounded-xl p-6 border border-slate-700">

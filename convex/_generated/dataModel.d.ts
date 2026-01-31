@@ -27,6 +27,39 @@ import type { GenericId } from "convex/values";
  */
 
 export type DataModel = {
+  audit_trail: {
+    document: {
+      action:
+        | "extraction_started"
+        | "extraction_completed"
+        | "extraction_failed"
+        | "extraction_deleted";
+      errorMessage?: string;
+      extractionId?: Id<"extractions">;
+      metadata?: any;
+      pdfStorageId?: Id<"_storage">;
+      userId: string;
+      _id: Id<"audit_trail">;
+      _creationTime: number;
+    };
+    fieldPaths:
+      | "_creationTime"
+      | "_id"
+      | "action"
+      | "errorMessage"
+      | "extractionId"
+      | "metadata"
+      | "pdfStorageId"
+      | "userId";
+    indexes: {
+      by_id: ["_id"];
+      by_creation_time: ["_creationTime"];
+      by_extraction: ["extractionId", "_creationTime"];
+      by_user: ["userId", "_creationTime"];
+    };
+    searchIndexes: {};
+    vectorIndexes: {};
+  };
   extractions: {
     document: {
       companyName?: string;
@@ -67,6 +100,60 @@ export type DataModel = {
       by_id: ["_id"];
       by_creation_time: ["_creationTime"];
       by_user: ["userId", "_creationTime"];
+    };
+    searchIndexes: {};
+    vectorIndexes: {};
+  };
+  rate_limits: {
+    document: {
+      lastRequestAt: number;
+      requestCount: number;
+      userId: string;
+      windowStart: number;
+      _id: Id<"rate_limits">;
+      _creationTime: number;
+    };
+    fieldPaths:
+      | "_creationTime"
+      | "_id"
+      | "lastRequestAt"
+      | "requestCount"
+      | "userId"
+      | "windowStart";
+    indexes: {
+      by_id: ["_id"];
+      by_creation_time: ["_creationTime"];
+      by_user: ["userId", "_creationTime"];
+    };
+    searchIndexes: {};
+    vectorIndexes: {};
+  };
+  usage_tracking: {
+    document: {
+      extractionCount: number;
+      inputTokensTotal: number;
+      month: number;
+      outputTokensTotal: number;
+      totalCostUsd: number;
+      userId: string;
+      year: number;
+      _id: Id<"usage_tracking">;
+      _creationTime: number;
+    };
+    fieldPaths:
+      | "_creationTime"
+      | "_id"
+      | "extractionCount"
+      | "inputTokensTotal"
+      | "month"
+      | "outputTokensTotal"
+      | "totalCostUsd"
+      | "userId"
+      | "year";
+    indexes: {
+      by_id: ["_id"];
+      by_creation_time: ["_creationTime"];
+      by_user_year_month: ["userId", "year", "month", "_creationTime"];
     };
     searchIndexes: {};
     vectorIndexes: {};

@@ -6,6 +6,8 @@ import { useExtraction } from "@/hooks/useExtraction";
 import AuthHeader from "@/components/auth-header";
 import ICDetailsTable from "@/components/data-tables/ic-details-table";
 import { DetailedLoansTable } from "@/components/data-tables/detailed-loans-table";
+import { IPTransactionsCard } from "@/components/ip-transactions-card";
+import { ServiceArrangementsCard } from "@/components/service-arrangements-card";
 import { Loader2, AlertCircle, ChevronLeft } from "lucide-react";
 
 export default function ICDetailsPage() {
@@ -49,7 +51,7 @@ export default function ICDetailsPage() {
     );
   }
 
-  const { metadata, notes_extraction, tp_analysis } = extractionResult;
+  const { metadata, notes_extraction, tp_analysis, ip_transactions, service_arrangements } = extractionResult;
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -124,6 +126,16 @@ export default function ICDetailsPage() {
                 direction="received"
               />
             </div>
+          )}
+
+          {/* IP Transactions */}
+          {ip_transactions && (
+            <IPTransactionsCard ipTransactions={ip_transactions} />
+          )}
+
+          {/* Service Arrangements */}
+          {service_arrangements && (
+            <ServiceArrangementsCard serviceArrangements={service_arrangements} />
           )}
         </div>
       </main>

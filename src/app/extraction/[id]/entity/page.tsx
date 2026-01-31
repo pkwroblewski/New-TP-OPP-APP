@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useExtraction } from "@/hooks/useExtraction";
 import AuthHeader from "@/components/auth-header";
 import { BoardManagersCard } from "@/components/board-managers-card";
+import { FunctionalAnalysisCard } from "@/components/functional-analysis-card";
 import { Loader2, AlertCircle, ChevronLeft, Building2, Users, MapPin, Briefcase } from "lucide-react";
 
 export default function EntityPage() {
@@ -48,7 +49,7 @@ export default function EntityPage() {
     );
   }
 
-  const { metadata, entity_classification, entity_governance, notes_extraction } = extractionResult;
+  const { metadata, entity_classification, entity_governance, notes_extraction, functional_analysis } = extractionResult;
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -165,6 +166,11 @@ export default function EntityPage() {
                 <p className="text-2xl font-bold text-slate-200">{notes_extraction.employees_fte}</p>
               </div>
             </div>
+          )}
+
+          {/* Functional Analysis */}
+          {functional_analysis && (
+            <FunctionalAnalysisCard functionalAnalysis={functional_analysis} />
           )}
 
           {/* Governance */}

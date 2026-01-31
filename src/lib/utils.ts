@@ -326,3 +326,73 @@ export function getSpreadColor(spreadBps: number | null | undefined): string {
     return "text-emerald-500"; // Healthy spread
   }
 }
+
+/**
+ * Get IC Loans status badge classes
+ */
+export function getICLoansStatusClasses(
+  status: "compliant" | "needs_review" | "potentially_non_compliant" | "insufficient_data"
+): string {
+  switch (status) {
+    case "compliant":
+      return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    case "needs_review":
+      return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+    case "potentially_non_compliant":
+      return "bg-red-500/10 text-red-500 border-red-500/20";
+    case "insufficient_data":
+      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+  }
+}
+
+/**
+ * Get substance level badge classes
+ */
+export function getSubstanceLevelClasses(
+  level: "significant" | "limited" | "minimal"
+): string {
+  switch (level) {
+    case "significant":
+      return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    case "limited":
+      return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+    case "minimal":
+      return "bg-red-500/10 text-red-500 border-red-500/20";
+  }
+}
+
+/**
+ * Get rate comparison to market badge classes
+ */
+export function getRateComparisonClasses(
+  comparison: "above_market" | "at_market" | "below_market" | "undetermined"
+): string {
+  switch (comparison) {
+    case "above_market":
+      return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+    case "at_market":
+      return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    case "below_market":
+      return "bg-red-500/10 text-red-500 border-red-500/20";
+    case "undetermined":
+      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+  }
+}
+
+/**
+ * Get credit quality indicator badge classes
+ */
+export function getCreditQualityClasses(
+  quality: "investment_grade" | "sub_investment" | "distressed" | "not_determinable"
+): string {
+  switch (quality) {
+    case "investment_grade":
+      return "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+    case "sub_investment":
+      return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+    case "distressed":
+      return "bg-red-500/10 text-red-500 border-red-500/20";
+    case "not_determinable":
+      return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+  }
+}

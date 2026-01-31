@@ -7,6 +7,7 @@ import AuthHeader from "@/components/auth-header";
 import { SpreadAnalysisSection } from "@/components/spread-analysis-section";
 import { CapitalizationGauge } from "@/components/capitalization-gauge";
 import { BoardManagersCard } from "@/components/board-managers-card";
+import { ArmsLengthAssessmentCard } from "@/components/arms-length-assessment-card";
 import { Loader2, AlertCircle, ChevronLeft } from "lucide-react";
 
 export default function AnalysisPage() {
@@ -94,6 +95,11 @@ export default function AnalysisPage() {
             <SpreadAnalysisSection icFinancing={tp_analysis.ic_financing} />
             <CapitalizationGauge capitalization={tp_analysis.capitalization} />
           </div>
+
+          {/* Arm's Length Assessment */}
+          {tp_analysis.arms_length_assessment && (
+            <ArmsLengthAssessmentCard assessment={tp_analysis.arms_length_assessment} />
+          )}
 
           {/* Board of Managers */}
           {entity_governance && (

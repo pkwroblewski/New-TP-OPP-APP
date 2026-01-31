@@ -1,15 +1,16 @@
 "use node";
 
 import { action } from "../_generated/server";
+import { internal } from "../_generated/api";
 import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
 import {
   calculateCost,
   cleanJsonResponse,
-  stripBase64Prefix,
   handleAnthropicError,
 } from "../lib/claude_helpers";
 import { validateExtractionResult } from "../lib/extraction_schema";
+import { withRetry } from "../lib/retry_helpers";
 
 /**
  * System prompt for Claude extraction
@@ -38,22 +39,48 @@ COMPANY PROFILE RULES - CRITICAL:
 - Do not extrapolate or make assumptions about business activities not described
 
 LUXEMBOURG TRANSFER PRICING CONTEXT:
-- Luxembourg has no statutory thin capitalization ratio
-- Historical 85:15 debt-to-equity guideline is indicative only, not binding
-- SOPARFI structures require demonstrable economic substance
-- Interest rates should be comparable to third-party market rates
-- Management fees must follow cost-plus or comparable method
-- Transfer pricing documentation (Master File/Local File) required for large groups
-- OECD Transfer Pricing Guidelines adopted via Circular L.I.R. n° 56/1 - 56bis/1
-- Arm's length principle applies to all IC transactions
+
+1. REGULATORY FRAMEWORK:
+   - No statutory thin capitalization ratio (85:15 is indicative only, not binding)
+   - OECD Transfer Pricing Guidelines adopted via Circular L.I.R. n° 56/1 - 56bis/1
+   - Advance Pricing Agreements (APAs) available from 2015
+   - Country-by-Country Reporting (CbCR) for groups > EUR 750M revenue
+   - Arm's length principle applies to all IC transactions
+
+2. SOPARFI REQUIREMENTS:
+   - Demonstrable economic substance required
+   - Board meetings typically in Luxembourg
+   - Decision-making authority must be local
+   - Minimum substance: directors, office, local bank accounts
+
+3. INTEREST RATE BENCHMARKING:
+   - EURIBOR + credit spread is standard benchmark
+   - Typical IC loan spreads: 150-500 bps for investment grade
+   - Higher spreads (500-800 bps) acceptable for sub-investment grade
+   - Document basis for rate determination
+   - Flag rates significantly outside market (< 50bps OR > 1000bps over benchmark)
+
+4. MANAGEMENT FEE GUIDANCE:
+   - Cost-plus method most common (5-15% markup typical)
+   - Direct costs should be allocated based on benefit received
+   - Shareholder costs not chargeable to subsidiaries
+   - Document time spent and allocation methodology
+
+5. TP DOCUMENTATION THRESHOLDS:
+   - Master File: Groups with > EUR 750M consolidated revenue
+   - Local File: Entities with > EUR 100M revenue OR > EUR 5M IC transactions
+   - Simplified approach available for smaller entities
 
 ARM'S LENGTH PRINCIPLE VALIDATION:
 - For each IC financing transaction, assess if interest rate appears arm's length
 - Compare implied rates to EUR benchmark rates (EURIBOR + typical credit spread)
 - Flag rates significantly above/below market (outside 150-800 bps over EURIBOR for corporate loans)
+- Rates < 50 bps over benchmark: Likely below arm's length (flag high priority)
+- Rates > 1000 bps over benchmark: Potentially excessive unless justified (flag high priority)
 - Note absence of documented pricing justification
 - Assess credit quality of borrower based on financial statements
 - Consider loan characteristics (secured/unsecured, tenor, subordination)
+- Zero/negative spread on financing activities is a critical flag
 
 TP DOCUMENTATION EXTRACTION:
 - Look for references to "Transfer Pricing Policy", "Master File", "Local File"
@@ -386,22 +413,26 @@ COMPANY PROFILE GENERATION RULES:
 - business_activities: Search the entire document including notes, corporate purpose, and any descriptive sections
 
 SCORING RULES:
-- Score A (High Priority):
+- Score A (High Priority) - ANY of these triggers:
   * Zero/negative spread (<10 bps) OR
   * Total IC exposure > EUR 100M OR
-  * D/E ratio > 10x OR
+  * D/E ratio > 10x AND no documented justification in notes OR
   * 2+ high priority flags OR
   * No TP documentation referenced (master_file=false AND local_file=false AND tp_policy=false) OR
   * Arms length status = "potentially_non_compliant" OR
-  * Significant IP/royalty transactions without benchmarking mentioned
-- Score B (Medium Priority):
+  * IC interest rates outside market range (< 50bps OR > 1000bps over benchmark) OR
+  * Significant IP/royalty transactions without benchmarking mentioned OR
+  * IP transactions > EUR 1M without pricing method disclosure
+- Score B (Medium Priority) - ANY of these triggers:
   * IC exposure > EUR 20M OR
-  * Cash pooling identified OR
+  * Cash pooling identified without clear documentation OR
   * Material IC services (>EUR 500K) OR
   * D/E ratio 5.67x-10x OR
   * IP transactions detected without pricing method disclosed OR
   * Limited substance indicators (substance_level = "limited" or "minimal") OR
-  * Management fees without clear pricing basis
+  * Management fees without clear pricing basis (cost_plus or fixed_fee not stated) OR
+  * < 3 functions performed (limited functional profile) OR
+  * Missing TP policy disclosure with material IC transactions
 - Score C (Low Priority): Default if not A or B
 
 D/E RATIO THRESHOLDS (Luxembourg market practice):
@@ -460,14 +491,52 @@ export const extractPdf = action({
       throw new Error("Authentication required. Please sign in to use the extraction feature.");
     }
 
+    const userId = identity.subject;
+
+    // Check rate limit before processing
+    const rateLimitStatus = await ctx.runQuery(internal.rateLimit.checkRateLimit, {
+      userId,
+    });
+
+    if (!rateLimitStatus.allowed) {
+      const retryAfterSec = Math.ceil((rateLimitStatus.retryAfterMs ?? 60000) / 1000);
+      throw new Error(
+        `Rate limit exceeded. Please wait ${retryAfterSec} seconds before trying again.`
+      );
+    }
+
+    // Record the request for rate limiting
+    await ctx.runMutation(internal.rateLimit.recordRequest, { userId });
+
+    // Log extraction started
+    await ctx.runMutation(internal.audit.logEvent, {
+      userId,
+      action: "extraction_started",
+      pdfStorageId: args.pdfStorageId,
+      metadata: { timestamp: Date.now() },
+    });
+
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
+      // Log failure
+      await ctx.runMutation(internal.audit.logEvent, {
+        userId,
+        action: "extraction_failed",
+        pdfStorageId: args.pdfStorageId,
+        errorMessage: "ANTHROPIC_API_KEY not configured",
+      });
       throw new Error("ANTHROPIC_API_KEY environment variable is not configured");
     }
 
     // Read PDF from Convex storage
     const pdfBlob = await ctx.storage.get(args.pdfStorageId);
     if (!pdfBlob) {
+      await ctx.runMutation(internal.audit.logEvent, {
+        userId,
+        action: "extraction_failed",
+        pdfStorageId: args.pdfStorageId,
+        errorMessage: "PDF file not found in storage",
+      });
       throw new Error("PDF file not found in storage. Please try uploading again.");
     }
 
@@ -477,39 +546,69 @@ export const extractPdf = action({
 
     const anthropic = new Anthropic({ apiKey });
 
-    let response;
+    let response: Anthropic.Message;
     try {
-      response = await anthropic.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 8192,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: "user",
-            content: [
+      // Wrap Claude API call with retry logic for transient errors
+      response = await withRetry(
+        async () => {
+          return await anthropic.messages.create({
+            model: "claude-sonnet-4-20250514",
+            max_tokens: 8192,
+            system: SYSTEM_PROMPT,
+            messages: [
               {
-                type: "document",
-                source: {
-                  type: "base64",
-                  media_type: "application/pdf",
-                  data: base64Data,
-                },
-              } as unknown as Anthropic.ImageBlockParam,
-              {
-                type: "text",
-                text: USER_PROMPT,
+                role: "user",
+                content: [
+                  {
+                    type: "document",
+                    source: {
+                      type: "base64",
+                      media_type: "application/pdf",
+                      data: base64Data,
+                    },
+                  } as unknown as Anthropic.ImageBlockParam,
+                  {
+                    type: "text",
+                    text: USER_PROMPT,
+                  },
+                ],
               },
             ],
+          });
+        },
+        {
+          maxRetries: 3,
+          baseDelayMs: 1000,
+          onRetry: (attempt, error, delayMs) => {
+            console.log(
+              `Claude API retry attempt ${attempt}, waiting ${delayMs}ms:`,
+              error instanceof Error ? error.message : "Unknown error"
+            );
           },
-        ],
-      });
+        }
+      );
     } catch (error) {
+      // Log API failure
+      const errorMessage = error instanceof Error ? error.message : "Unknown Claude API error";
+      await ctx.runMutation(internal.audit.logEvent, {
+        userId,
+        action: "extraction_failed",
+        pdfStorageId: args.pdfStorageId,
+        errorMessage,
+        metadata: { errorType: "claude_api_error" },
+      });
       handleAnthropicError(error);
     }
 
     // Extract text content from response
     const textContent = response.content.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
+      await ctx.runMutation(internal.audit.logEvent, {
+        userId,
+        action: "extraction_failed",
+        pdfStorageId: args.pdfStorageId,
+        errorMessage: "No text response from Claude",
+      });
       throw new Error("No text response from Claude");
     }
 
@@ -522,6 +621,12 @@ export const extractPdf = action({
       // Truncate logged response to avoid exposing sensitive data
       const truncated = textContent.text.substring(0, 500);
       console.error("Failed to parse Claude response:", truncated + "...");
+      await ctx.runMutation(internal.audit.logEvent, {
+        userId,
+        action: "extraction_failed",
+        pdfStorageId: args.pdfStorageId,
+        errorMessage: "Invalid JSON response from extraction",
+      });
       throw new Error("Invalid JSON response from extraction");
     }
 
@@ -532,6 +637,27 @@ export const extractPdf = action({
     const inputTokens = response.usage.input_tokens;
     const outputTokens = response.usage.output_tokens;
     const cost = calculateCost(inputTokens, outputTokens);
+
+    // Record usage for tracking
+    await ctx.runMutation(internal.usage.recordUsage, {
+      userId,
+      costUsd: cost,
+      inputTokens,
+      outputTokens,
+    });
+
+    // Log successful extraction
+    await ctx.runMutation(internal.audit.logEvent, {
+      userId,
+      action: "extraction_completed",
+      pdfStorageId: args.pdfStorageId,
+      metadata: {
+        costUsd: cost,
+        inputTokens,
+        outputTokens,
+        companyName: validatedResult.metadata?.company_name ?? null,
+      },
+    });
 
     return {
       result: {
