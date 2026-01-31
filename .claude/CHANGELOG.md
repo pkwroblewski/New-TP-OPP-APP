@@ -5,6 +5,21 @@ All notable changes to TP Extractor.
 ## January 2026
 
 ### January 31
+- **Phase 3-5: Architecture Robustness, UI/UX, Enhanced Scoring** (deployed)
+  - Added exponential backoff with jitter (`convex/lib/retry_helpers.ts`)
+  - Added monthly usage tracking (`convex/usage.ts`)
+  - Added audit trail logging (`convex/audit.ts`)
+  - Added rate limiting at 10 requests/minute (`convex/rateLimit.ts`)
+  - Added 3 new database tables: `audit_trail`, `usage_tracking`, `rate_limits`
+  - Integrated retry, audit, and rate limit into `extractPdf` action
+  - Added enhanced Luxembourg-specific scoring rules to prompts
+  - Added TP Documentation Status card component
+  - Added Functional Analysis (FAR) card component
+  - Added Arms Length Assessment card component
+  - Added IP Transactions table component
+  - Added Service Arrangements table component
+  - Integrated new cards into extraction detail pages
+  - Added helper formatting functions to `src/lib/utils.ts`
 - **Phase 2: Schema Consolidation**
   - Added Zod schemas for all new Phase 1 prompt fields
   - New schemas: `FunctionalAnalysisSchema`, `TPDocumentationSchema`, `IPTransactionsSchema`, `ServiceArrangementsSchema`, `ArmsLengthAssessmentSchema`
